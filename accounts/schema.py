@@ -1,6 +1,13 @@
 import graphene
+from graphene_django import DjangoObjectType
 
-from .types import UserType
+from accounts.models import User
+
+
+class UserType(DjangoObjectType):
+    class Meta:
+        model = User
+        exclude = ('password',)
 
 
 class Query(graphene.ObjectType):

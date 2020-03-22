@@ -39,21 +39,24 @@ INSTALLED_APPS = [
     # third party applications
     'rest_framework',
     'knox',
-    # rest auth
     'rest_auth',
     'rest_auth.registration',
-
-    'corsheaders',
 
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
 
+    'corsheaders',
+
     'graphene_django',
 
     # My Apps
     'accounts',
+    'candidates',
+    'elections',
+    'seats',
+    'votes',
 ]
 
 MIDDLEWARE = [
