@@ -1,4 +1,4 @@
-from allauth.account.views import password_reset_from_key
+from allauth.account.views import password_reset_from_key,email_verification_sent
 from django.urls import path
 from rest_auth.registration.views import VerifyEmailView
 from rest_auth.views import (
@@ -23,6 +23,9 @@ urlpatterns = [
     path('register/verify-email/', VerifyEmailView.as_view(), name='rest_verify_email'),
     # url for account confirmation using the link sent in the email
     path('register/account-confirm-email/<str:key>', ConfirmEmailApi.as_view(), name='account_confirm_email'),
+
+    # url for informing the user that the verification in sent
+    path("register/confirm-email/", email_verification_sent, name="account_email_verification_sent"),
 
     # url link used for resetting user password from the link sent in the email
     path(

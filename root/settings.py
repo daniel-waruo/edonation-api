@@ -211,3 +211,11 @@ REST_AUTH_SERIALIZERS = {
     'TOKEN_SERIALIZER': 'accounts.serializers.KnoxSerializer',
     'LOGIN_SERIALIZER': 'accounts.serializers.LoginSerializer'
 }
+
+# STATIC FILES CONFIGURATION
+
+STATIC_ROOT = 'staticfiles'
+
+# Configure Django App for Heroku.
+import django_heroku
+django_heroku.settings(locals())
