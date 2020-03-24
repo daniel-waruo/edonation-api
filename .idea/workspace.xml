@@ -37,8 +37,8 @@
       <file leaf-file-name="settings.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/root/settings.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="327">
-              <caret line="210" selection-start-line="210" selection-end-line="210" />
+            <state relative-caret-position="56">
+              <caret line="220" column="32" lean-forward="true" selection-start-line="220" selection-start-column="32" selection-end-line="220" selection-end-column="32" />
             </state>
           </provider>
         </entry>
@@ -164,11 +164,6 @@
               <item name="church" type="b2602c69:ProjectViewProjectNode" />
               <item name="church" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="church" type="b2602c69:ProjectViewProjectNode" />
-              <item name="church" type="462c0819:PsiDirectoryNode" />
-              <item name="root" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -178,7 +173,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="add_unversioned_files" value="$PROJECT_DIR$/.env" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../next-js-e-commerse" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../e-commerse-api" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
@@ -243,7 +238,7 @@
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32838285" />
       <window_info anchor="bottom" id="Python Console" order="7" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49546143" weight="0.32838285" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="7" sideWeight="0.49394855" visible="true" weight="0.19636963" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="7" sideWeight="0.49394855" visible="true" weight="0.61551154" />
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.23373677" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="3" />
@@ -594,8 +589,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/root/settings.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="327">
-          <caret line="210" selection-start-line="210" selection-end-line="210" />
+        <state relative-caret-position="56">
+          <caret line="220" column="32" lean-forward="true" selection-start-line="220" selection-start-column="32" selection-end-line="220" selection-end-column="32" />
         </state>
       </provider>
     </entry>
