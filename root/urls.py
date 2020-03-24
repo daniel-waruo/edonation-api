@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import path, include
 from graphene_django.views import GraphQLView
 
@@ -29,7 +30,10 @@ urlpatterns = [
     # REST API URLS
     #############################
 
-    # account urls
+    # home page
+    path('', lambda request: JsonResponse({"data": "Welcome to the Voting API"})),
+
+    # accounts
     path('accounts/', include('accounts.urls')),
 
     ############################

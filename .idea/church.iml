@@ -19,7 +19,6 @@
     <orderEntry type="jdk" jdkName="Python 3.7 (church)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="voting-frontend" />
-    <orderEntry type="module" module-name="e_commerce" />
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_FOLDERS">
