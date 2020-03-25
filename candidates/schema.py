@@ -3,6 +3,7 @@ from graphene_django import DjangoObjectType
 from graphene_django.converter import convert_django_field
 from pyuploadcare.dj.models import ImageField
 
+from elections.models import Election
 from .models import Candidate
 
 
@@ -17,4 +18,20 @@ class CandidateType(DjangoObjectType):
 
 
 class Query(graphene.ObjectType):
-    candidate = graphene.Field(CandidateType)
+    candidates = graphene.List(
+        CandidateType,
+        slug=graphene.String(required=True)
+    )
+
+    def resolve_candidates(self, info, **kwargs):
+        # get the active election
+        election = Election.objects.active()
+        # get slug from query
+        slug = kwargs.get("slug")
+        # get the candidates linked to the slug and election
+        candidates = Candidate.objects.filter(
+            seat__slug=slug,
+            seat__election=election
+        )
+        # return candidates
+        return candidates
