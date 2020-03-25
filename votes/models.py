@@ -9,6 +9,3 @@ User = settings.AUTH_USER_MODEL
 class Vote(models.Model):
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.candidate.first_name + " Vote"
