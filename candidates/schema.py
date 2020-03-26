@@ -35,3 +35,15 @@ class Query(graphene.ObjectType):
         )
         # return candidates
         return candidates
+
+    candidate = graphene.Field(
+        CandidateType,
+        id=graphene.String(required=True)
+    )
+
+    def resolve_candidate(self, info, **kwargs):
+        candidate_id = kwargs.get("id")
+        try:
+            return Candidate.objects.get(id=candidate_id)
+        except Candidate.DoesNotExist:
+            return None
