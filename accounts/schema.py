@@ -2,9 +2,16 @@ import graphene
 from graphene_django import DjangoObjectType
 
 from accounts.models import User
+from elections.models import Election
 
 
 class UserType(DjangoObjectType):
+    voted = graphene.Boolean()
+
+    def resolve_voted(self: User, info):
+        election = Election.objects.active()
+        return self.is_voted(election)
+
     class Meta:
         model = User
         exclude = ('password',)

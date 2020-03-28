@@ -11,9 +11,11 @@ class Candidate(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     email = models.EmailField()
-    image = ImageField()
+    image = ImageField(null=True)
 
     seat = models.ForeignKey(Seat, on_delete=models.CASCADE, related_name="candidates")
 
     def __str__(self):
         return "{} {} ".format(self.first_name, self.last_name)
+
+
