@@ -9,6 +9,8 @@ class Seat(models.Model):
     name = models.CharField(max_length=200)
     slug = models.SlugField(null=True, editable=False)
 
+    priority = models.PositiveSmallIntegerField(default=0)
+
     def save(self, *args, **kwargs):
         self.name.title()
         self.slug = slugify(self.name)
@@ -19,6 +21,7 @@ class Seat(models.Model):
             ['election', 'name'],
             ['election', 'slug']
         ]
+        ordering = ['priority']
 
     def __str__(self):
         return self.name
