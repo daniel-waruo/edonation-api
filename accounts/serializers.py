@@ -1,15 +1,16 @@
 from allauth.account import app_settings
+from allauth.account.forms import ResetPasswordForm
 from allauth.account.utils import send_email_confirmation
 from django.contrib.auth import authenticate
-from django.contrib.auth.forms import PasswordResetForm
+from rest_auth.registration.serializers import RegisterSerializer as BaseRegisterSerializer
 from rest_auth.serializers import (
     PasswordResetSerializer as ResetPasswordSerializer,
     UserDetailsSerializer,
-    LoginSerializer as BaseLoginSerializer
+    LoginSerializer as BaseLoginSerializer,
 )
 from rest_framework import serializers
 
-from .models import User
+from accounts.models import User
 
 
 class KnoxSerializer(serializers.Serializer):
@@ -32,12 +33,11 @@ class LoginSerializer(BaseLoginSerializer):
 
     def validate(self, attrs):
         # get data
-        username = attrs.get('username')
         email = attrs.get('email')
         password = attrs.get('password')
 
         # check whether the user credentials are valid
-        user = self._validate_username_email(username, email, password)
+        user = self._validate_username_email(None, email, password)
 
         # Did we get back an active user?
         if user:
@@ -55,6 +55,27 @@ class LoginSerializer(BaseLoginSerializer):
                 raise serializers.ValidationError('E-mail is not verified.Check your email')
         attrs['user'] = user
         return attrs
+
+
+class RegisterSerializer(BaseRegisterSerializer):
+    first_name = serializers.CharField(
+        max_length=255,
+        min_length=1,
+        required=True
+    )
+    last_name = serializers.CharField(
+        max_length=255,
+        min_length=1,
+        required=True
+    )
+
+    def get_cleaned_data(self):
+        data = super().get_cleaned_data()
+        data.update({
+            'first_name': self.validated_data.get('first_name', ''),
+            'last_name': self.validated_data.get('last_name', '')
+        })
+        return data
 
 
 # serializer for changing a password
@@ -81,15 +102,6 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         if user and user.is_active:
             return user
         raise serializers.ValidationError("Unable to log in with provided credentials.")
-
-
-class ResetPasswordForm(PasswordResetForm):
-    def save(self, *args, **kwargs):
-        super().save(
-            subject_template_name='account_registration/password_reset_subject.txt',
-            email_template_name='account_registration/password_reset_email.html',
-            html_email_template_name='account_registration/password_reset_email.html'
-        )
 
 
 class PasswordResetSerializer(ResetPasswordSerializer):

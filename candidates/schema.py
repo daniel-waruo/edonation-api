@@ -5,6 +5,7 @@ from pyuploadcare.dj.models import ImageField
 
 from elections.models import Election
 from .models import Candidate
+from .serializers import AddCandidateSerializer
 
 
 @convert_django_field.register(ImageField)
@@ -47,3 +48,41 @@ class Query(graphene.ObjectType):
             return Candidate.objects.get(id=candidate_id)
         except Candidate.DoesNotExist:
             return None
+
+
+class AddCandidate(graphene.Mutation):
+    """
+      This mutation allows the addition of a candidate
+      through the election manager
+    """
+    candidate = graphene.Field(CandidateType)
+    errors = graphene.JSONString()
+
+    """Define the data to be sent to the server"""
+
+    class Arguments:
+        first_name = graphene.String(required=True)
+        last_name = graphene.String(required=True)
+        email = graphene.String(required=True)
+        image = graphene.String(required=True)
+        seat_id = graphene.String(required=True)
+
+    """Save the data sent by the user to the db"""
+
+    def mutate(self, info, **kwargs):
+        # get request object
+        request = info.context
+        # check if user is authenticated
+        if request.user.is_authenticated:
+            # add election to data base
+            serializer = AddCandidateSerializer(data=kwargs, context=request)
+            if serializer.is_valid():
+                # return an election
+                return AddCandidate(candidate=serializer.save())
+            return AddCandidate(errors=serializer.errors)
+        # raise an exception if the user is not authenticated
+        raise Exception("User must Login to add Candidate")
+
+
+class Mutation(graphene.ObjectType):
+    add_candidate = AddCandidate.Field()

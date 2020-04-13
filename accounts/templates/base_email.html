@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+{% load account %}
+{% user_display user as user_display %}
+{% load i18n %}
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>{% block head_title %}{% endblock %}</title>
+  <style rel="stylesheet">
+    body {
+      font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+      color: #212529;
+      font-weight: lighter;
+    }
+
+    .container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    a.btn:not([href]):not([tabindex]), a.btn:not([href]):not([tabindex]):focus, a.btn:not([href]):not([tabindex]):hover {
+      color: #fff
+    }
+
+    .button {
+      text-decoration: none;
+      color: #fefefe;
+      background: #00b8d4;
+      border-radius: 50rem !important;
+      border: transparent solid;
+      text-align: center;
+      box-sizing: border-box;
+      text-transform: uppercase;
+      word-wrap: break-word;
+      white-space: normal;
+      cursor: pointer;
+      border: 0;
+      -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+      box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+      -webkit-transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+      transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+      transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+      padding: .84rem 2.14rem;
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+      font-size: .81rem;
+    }
+
+    .title {
+      font-weight: 100;
+      font-size: 2rem;
+    }
+
+    .content {
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+  </style>
+  {% block css %}{% endblock %}
+</head>
+<body>
+<div>
+  <!--TODO: Add revelant domain name -->
+  <div class="container">
+    {% block content %}
+    {% endblock %}
+  </div>
+  <br/>
+</div>
+</body>
+</html>

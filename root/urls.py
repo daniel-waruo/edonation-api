@@ -17,7 +17,8 @@ from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import path, include
 from graphene_django.views import GraphQLView
-
+from django.conf.urls.static import static
+from django.conf import settings
 from accounts.views import DRFAuthenticatedGraphQLView
 
 urlpatterns = [
@@ -43,4 +44,4 @@ urlpatterns = [
     path("graphi-ql", GraphQLView.as_view(graphiql=True)),
     path("graph-ql", DRFAuthenticatedGraphQLView.as_view()),
 
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

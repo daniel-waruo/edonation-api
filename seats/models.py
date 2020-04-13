@@ -12,7 +12,7 @@ class Seat(models.Model):
     priority = models.PositiveSmallIntegerField(default=0)
 
     def save(self, *args, **kwargs):
-        self.name.title()
+        self.name = self.name.title()
         self.slug = slugify(self.name)
         super(Seat, self).save(*args, **kwargs)
 

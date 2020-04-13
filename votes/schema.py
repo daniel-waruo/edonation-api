@@ -40,7 +40,13 @@ class SubmitVote(graphene.Mutation):
                 Vote.objects.vote(candidate_ids=candidate_ids, election=election)
                 # make user as voted
                 UserVote.objects.add(request.user, election)
-                return Candidate.objects.filter(id__in=candidate_ids, seat__election=election)
+
+                return SubmitVote(
+                    candidates=Candidate.objects.filter(
+                        id__in=candidate_ids,
+                        seat__election=election
+                    )
+                )
             # else raise an exception
             else:
                 raise Exception("You have already voted in this election")

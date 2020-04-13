@@ -36,6 +36,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+
+    # Custom Apps
+    'accounts',
+    'candidates',
+    'elections',
+    'seats',
+    'votes',
+
     # third party applications
     'rest_framework',
     'knox',
@@ -50,13 +58,6 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'graphene_django',
-
-    # My Apps
-    'accounts',
-    'candidates',
-    'elections',
-    'seats',
-    'votes',
 ]
 
 MIDDLEWARE = [
@@ -149,13 +150,16 @@ STATIC_URL = '/static/'
 
 # ALL-AUTH ACCOUNT SETTINGS
 
+ACCOUNT_ADAPTER = "accounts.adapter.AccountAdapter"
+
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 14
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 10
-ACCOUNT_USERNAME_MIN_LENGTH = 6
 ACCOUNT_LOGOUT_ON_GET = False
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USERNAME_REQUIRED = False
 
 SOCIALACCOUNT_AUTO_SIGNUP = False
 
@@ -179,7 +183,10 @@ CORS_ALLOW_CREDENTIALS = True
 
 # EMAIL BACK-END CONFIGURATION
 # TODO:change back-end in production
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.mailtrap.io'
+EMAIL_HOST_USER = '7b321b0a68d6a2'
+EMAIL_HOST_PASSWORD = '9901f979d0fab0'
+EMAIL_PORT = '2525'
 
 # GRAPHENE CONFIGURATION
 GRAPHENE = {
@@ -218,4 +225,5 @@ STATIC_ROOT = 'staticfiles'
 
 # Configure Django App for Heroku.
 import django_heroku
+
 django_heroku.settings(locals())

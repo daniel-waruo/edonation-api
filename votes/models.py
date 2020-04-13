@@ -54,7 +54,7 @@ def create_vote(**kwargs):
 
 class UserVote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='votes')
-    election = models.ForeignKey(Election, models.CASCADE, related_name='users')
+    election = models.ForeignKey(Election, models.CASCADE, related_name='votes')
 
     objects = UserVoteManager()
 
