@@ -54,11 +54,15 @@ class AddCandidateSerializer(serializers.Serializer):
         return data
 
     def get_validated_data(self):
+        # save image before saving to db
+        image = self.validated_data["image"]
+        # store the file
+        File(image).store()
         return {
             "first_name": self.validated_data["first_name"],
             "last_name": self.validated_data["last_name"],
             "email": self.validated_data["email"],
-            "image": self.validated_data["image"],
+            "image": image,
             "seat": Seat.objects.get(id=self.validated_data["seat_id"])
         }
 
