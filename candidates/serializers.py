@@ -30,6 +30,11 @@ class AddCandidateSerializer(serializers.Serializer):
 
     image = serializers.URLField(validators=[image_validator])
 
+    def validate_image(self, value):
+        file = File(value)
+        file.info()
+        return value
+
     email = serializers.EmailField()
 
     seat_id = serializers.CharField(required=True)
