@@ -1,25 +1,15 @@
 import graphene
 
-from accounts.schema import Query as UserQuery
-from candidates.schema import (
-    Mutation as CandidateMutation,
-    Query as CandidateQuery)
-from elections.schema import (
-    Mutation as ElectionMutation,
-    Query as ElectionQuery)
-from seats.schema import (
-    Mutation as SeatMutation,
-    Query as SeatQuery)
-from votes.schema import Mutation as VotesMutation
+from accounts.schema import Query as UserQuery, Mutation as UserMutation
 
 
-class Query(UserQuery, ElectionQuery, SeatQuery, CandidateQuery, graphene.ObjectType):
+class Query(UserQuery, graphene.ObjectType):
     # This class will inherit from multiple Queries
     # as we begin to add more apps to our project
     pass
 
 
-class Mutation(VotesMutation, ElectionMutation, SeatMutation, CandidateMutation, graphene.ObjectType):
+class Mutation(UserMutation, graphene.ObjectType):
     # class will inherit multiple mutation
     pass
 

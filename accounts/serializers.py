@@ -2,6 +2,8 @@ from allauth.account import app_settings
 from allauth.account.forms import ResetPasswordForm
 from allauth.account.utils import send_email_confirmation
 from django.contrib.auth import authenticate
+from rest_auth.app_settings import create_token
+from rest_auth.models import TokenModel
 from rest_auth.registration.serializers import RegisterSerializer as BaseRegisterSerializer
 from rest_auth.serializers import (
     PasswordResetSerializer as ResetPasswordSerializer,
@@ -24,11 +26,10 @@ class KnoxSerializer(serializers.Serializer):
 
 # serializer for logging in a user
 class LoginSerializer(BaseLoginSerializer):
-    """
-    Login
-    Serializer for handling login in our application
-    it inherits from Login Serializer and is tweaked for
-    login using Knox library
+    """ LoginSerializer
+        Serializer for handling login in our application
+        it inherits from Login Serializer and is tweaked for
+        login using Knox library.
     """
 
     def validate(self, attrs):
@@ -56,6 +57,49 @@ class LoginSerializer(BaseLoginSerializer):
         attrs['user'] = user
         return attrs
 
+    def save(self, **kwargs):
+        user = self.validated_data['user']
+        token = create_token(TokenModel, user, None)
+        return token, user
+
+
+class CreateAdminUserSerializer(serializers.Serializer):
+    first_name = serializers.CharField(
+        max_length=255,
+        min_length=1,
+        required=True
+    )
+    last_name = serializers.CharField(
+        max_length=255,
+        min_length=1,
+        required=True
+    )
+    phone = serializers.CharField(max_length=20)
+
+    def validate_phone(self, value):
+        if User.objects.filter(phone=value):
+            raise serializers.ValidationError("Phone number must be unique")
+        return value
+
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if User.objects.filter(phone=value):
+            raise serializers.ValidationError("Email must be unique")
+        return value
+
+    def save(self, **kwargs):
+        user = User.objects.create_admin_user(
+            first_name=self.validated_data["first_name"],
+            last_name=self.validated_data["last_name"],
+            phone=self.validated_data["phone"],
+            email=self.validated_data["email"],
+            creator=self.context["request"].user
+        )
+        # send email to user to set their own password
+        send_email_confirmation()
+        return user
+
 
 class RegisterSerializer(BaseRegisterSerializer):
     first_name = serializers.CharField(
@@ -82,9 +126,7 @@ class RegisterSerializer(BaseRegisterSerializer):
 class ChangePasswordSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = [
-            'password'
-        ]
+        fields = ['password']
         # extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -99,10 +141,28 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
                 "password": data["current_password"],
             }
         )
-        if user and user.is_active:
-            return user
-        raise serializers.ValidationError("Unable to log in with provided credentials.")
+        if not user or not user.is_active:
+            raise serializers.ValidationError("Unable to log in with provided credentials.")
+        return data
 
 
 class PasswordResetSerializer(ResetPasswordSerializer):
     password_reset_form_class = ResetPasswordForm
+
+
+class ProfileSerializer(serializers.Serializer):
+    first_name = serializers.CharField(
+        max_length=30,
+        min_length=1,
+        required=True
+    )
+    last_name = serializers.CharField(
+        max_length=30,
+        min_length=1,
+        required=True
+    )
+    phone = serializers.CharField(max_length=20, required=True)
+
+    def validate_phone(self, value):
+        # validate the format of the phone number
+        return value

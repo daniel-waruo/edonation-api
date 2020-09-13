@@ -1,8 +1,6 @@
 from allauth.account import app_settings as allauth_settings
-from allauth.account.adapter import get_adapter
 from allauth.account.utils import complete_signup
 from allauth.account.views import ConfirmEmailView
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from django.http import JsonResponse
 from graphene_django.views import GraphQLView
 from rest_auth.registration.serializers import SocialLoginSerializer
@@ -80,17 +78,6 @@ class ConfirmEmailApi(ConfirmEmailView):
         return JsonResponse({
             "detail": "Your Email was already verified.Try logging in."
         }, status=400)
-
-
-class SocialLoginView(KnoxLoginView):
-    serializer_class = SocialLoginSerializer
-
-    def process_login(self):
-        get_adapter(self.request).login(self.request, self.user)
-
-
-class GoogleLogin(SocialLoginView):
-    adapter_class = GoogleOAuth2Adapter
 
 
 class DRFAuthenticatedGraphQLView(GraphQLView):

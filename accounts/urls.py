@@ -7,17 +7,12 @@ from rest_auth.views import (
 )
 
 from accounts.views import (
-    GoogleLogin,
     KnoxRegisterView,
     PasswordResetView,
-    KnoxLoginView,
     ConfirmEmailApi
 )
 
 urlpatterns = [
-    # LOGIN AND LOGOUT URLS #
-    # url for user login
-    path('login/', KnoxLoginView.as_view(), name='rest_login'),
     # url for user logout
     path('logout/', LogoutView.as_view(), name='rest_logout'),
 
@@ -43,9 +38,5 @@ urlpatterns = [
          name="account_reset_password_from_key_done"),
     # url for handling password change
     path('password/change/', PasswordChangeView.as_view(), name='rest_password_change'),
-
-    # SOCIAL LOGIN URLS #
-    # google login
-    path('social/google/', GoogleLogin.as_view(), name='g_login'),
 
 ]

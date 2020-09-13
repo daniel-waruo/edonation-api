@@ -1,23 +1,41 @@
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import UserManager as BaseUserManager
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
+
 # Create your models here.
 
-# These are gender choices available
-gender_choices = (
-    ('m', 'MALE'),
-    ('f', 'FEMALE'),
-    ('u', 'UNKNOWN'),
-)
+
+class UserManager(BaseUserManager):
+    def create_admin_user(self, first_name, last_name, email, phone, creator):
+        assert creator.is_authenticated
+        assert creator.is_superuser
+        return self.create(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            phone=phone,
+            created_by=creator,
+            is_staff=True
+        )
+
+    def create_super_user(self, first_name, last_name, email, phone, creator):
+        assert creator.is_authenticated
+        assert creator.is_superuser
+        return self.create(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            phone=phone,
+            created_by=creator,
+            is_superuser=True
+        )
 
 
 class User(AbstractUser):
-    """
-    Custom User Class
-    """
     email = models.EmailField(
         unique=True,
         null=False,
@@ -25,6 +43,10 @@ class User(AbstractUser):
             'unique': _("The email is already in use"),
         },
     )
+    created_by = models.ForeignKey("self", null=True, on_delete=models.SET_NULL)
+    phone = models.CharField(max_length=20, null=True)
+
+    objects = UserManager()
 
     def is_voted(self, election):
         return self.votes.filter(
