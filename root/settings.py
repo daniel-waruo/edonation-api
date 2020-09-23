@@ -39,10 +39,7 @@ INSTALLED_APPS = [
 
     # Custom Apps
     'accounts',
-    'candidates',
-    'elections',
-    'seats',
-    'votes',
+    'products',
 
     # third party applications
     'rest_framework',
