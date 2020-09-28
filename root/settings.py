@@ -178,12 +178,13 @@ if os.environ.get('FRONT_END_URLS'):
 
 CORS_ALLOW_CREDENTIALS = True
 
-# EMAIL BACK-END CONFIGURATION
-# TODO:change back-end in production
-EMAIL_HOST = 'smtp.mailtrap.io'
-EMAIL_HOST_USER = '7b321b0a68d6a2'
-EMAIL_HOST_PASSWORD = '9901f979d0fab0'
-EMAIL_PORT = '2525'
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
+
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_HOST_USER = 'apikey'  # this is exactly the value 'apikey'
+EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
 # GRAPHENE CONFIGURATION
 GRAPHENE = {

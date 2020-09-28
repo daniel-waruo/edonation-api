@@ -32,15 +32,16 @@ class CreateProduct(graphene.Mutation):
         )
 
 
-class UpdateProduct(graphene.Mutation):
+class EditProduct(graphene.Mutation):
     product = graphene.Field(ProductType)
     errors = graphene.List(Error)
 
     class Arguments:
-        id = graphene.ID(required=True)
+        id = graphene.Int(required=True)
         name = graphene.String()
         price = graphene.Decimal()
         description = graphene.String()
+        images = graphene.List(graphene.String)
 
     def mutate(self, info, **kwargs):
         # get request object
@@ -49,7 +50,7 @@ class UpdateProduct(graphene.Mutation):
         if not request.user.is_authenticated:
             return None
         if not Product.objects.filter(id=kwargs["id"]).exists():
-            return UpdateProduct(
+            return EditProduct(
                 errors=[
                     Error(
                         field="non_field_errors",
@@ -62,14 +63,14 @@ class UpdateProduct(graphene.Mutation):
             instance=Product.objects.get(id=kwargs["id"])
         )
         if serializer.is_valid():
-            return UpdateProduct(
+            return EditProduct(
                 product=serializer.save()
             )
-        return UpdateProduct(
+        return EditProduct(
             errors=errors_to_graphene(serializer.errors)
         )
 
 
 class Mutation(graphene.ObjectType):
     create_product = CreateProduct.Field()
-    update_product = UpdateProduct.Field()
+    edit_product = EditProduct.Field()

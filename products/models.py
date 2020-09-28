@@ -1,5 +1,8 @@
 from django.db import models
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 from django.utils.text import slugify
+from pyuploadcare import File
 from pyuploadcare.dj.models import ImageField
 
 
@@ -46,3 +49,18 @@ class Product(models.Model):
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, models.CASCADE, related_name="images")
     url = ImageField()
+
+    def save(self, **kwargs):
+        super(ProductImage, self).save()
+
+
+@receiver(post_save, sender=ProductImage)
+def save_image_on_cloudcare(**kwargs):
+    product_image = kwargs['instance']
+    File(product_image.url).store()
+
+
+@receiver(post_delete, sender=ProductImage)
+def save_image_on_cloudcare(**kwargs):
+    product_image = kwargs['instance']
+    File(product_image.url).delete()

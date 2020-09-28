@@ -10,7 +10,7 @@ class Query(graphene.ObjectType):
     """ Product Query"""
     product = graphene.Field(
         ProductType,
-        id=graphene.String(),
+        id=graphene.ID(),
         slug=graphene.String()
     )
 

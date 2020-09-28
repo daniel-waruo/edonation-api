@@ -1,7 +1,8 @@
 import graphene
+from rest_auth.serializers import PasswordChangeSerializer
 
 from accounts.schema.types import Error, errors_to_graphene, UserType
-from accounts.serializers import LoginSerializer, CreateAdminUserSerializer
+from accounts.serializers import LoginSerializer, CreateAdminUserSerializer, PasswordResetSerializer
 
 
 class LoginMutation(graphene.Mutation):
@@ -103,7 +104,61 @@ class EditUserProfileMutation(graphene.Mutation):
         })
 
 
+class ResetPasswordMutation(graphene.Mutation):
+    """reset password"""
+    success = graphene.Boolean()
+    errors = graphene.List(Error)
+
+    class Arguments:
+        email = graphene.String(required=True)
+
+    def mutate(self, info, **kwargs):
+        serializer = PasswordResetSerializer(
+            data=kwargs,
+            context={
+                "request": info.context
+            }
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return ResetPasswordMutation(
+                success=True
+            )
+        return ResetPasswordMutation(
+            errors=errors_to_graphene(serializer.errors["email"])
+        )
+
+
+class ChangePasswordMutation(graphene.Mutation):
+    """change the password of the current user"""
+    success = graphene.Boolean()
+    errors = graphene.List(Error)
+
+    class Arguments:
+        old_password = graphene.String()
+        new_password1 = graphene.String()
+        new_password2 = graphene.String()
+
+    def mutate(self, info, **kwargs):
+        serializer = PasswordChangeSerializer(
+            data=kwargs,
+            context={
+                "request": info.context
+            }
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return ChangePasswordMutation(
+                success=True
+            )
+        return ChangePasswordMutation(
+            errors=errors_to_graphene(serializer.errors)
+        )
+
+
 class Mutation(graphene.ObjectType):
     login = LoginMutation.Field()
     create_admin_user = CreateAdminUserMutation.Field()
     edit_user_profile = EditUserProfileMutation.Field()
+    reset_password = ResetPasswordMutation.Field()
+    change_password = ChangePasswordMutation.Field()
