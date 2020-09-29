@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     # Custom Apps
     'accounts',
     'products',
-
+    'campaigns',
     # third party applications
     'rest_framework',
     'knox',
