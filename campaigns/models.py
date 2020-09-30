@@ -40,3 +40,8 @@ def delete_image_on_cloudcare(**kwargs):
 class CampaignProduct(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='products')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    target = models.PositiveIntegerField(default=1)
+
+    @property
+    def target_value(self):
+        return self.target * self.product.price

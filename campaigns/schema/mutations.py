@@ -1,8 +1,8 @@
 import graphene
 
 from accounts.schema.types import Error, errors_to_graphene
-from campaigns.serializers import CampaignSerializer
-from .types import CampaignType
+from campaigns.serializers import CampaignSerializer, CampaignProductSerializer
+from .types import CampaignType, CampaignProductType
 
 
 class CreateCampaign(graphene.Mutation):
@@ -74,6 +74,40 @@ class EditCampaign(graphene.Mutation):
         )
 
 
+class AddCampaignProductMutation(graphene.Mutation):
+    """add a product to the campaign """
+
+    class Arguments:
+        campaign_id = graphene.Int(required=True)
+        product_id = graphene.Int(required=True)
+        target = graphene.Int(required=True)
+
+    product = graphene.Field(CampaignProductType)
+    errors = graphene.List(Error)
+
+    def mutate(self, info, **kwargs):
+
+        user = info.context.user
+        # check if user is authenticated
+        if not user.is_authenticated:
+            return None
+        serializer = CampaignProductSerializer(
+            data={
+                "campaign": kwargs["campaign_id"],
+                "product": kwargs["product_id"],
+                "target": kwargs["target"]
+            }
+        )
+        if serializer.is_valid():
+            return AddCampaignProductMutation(
+                product=serializer.save()
+            )
+        return AddCampaignProductMutation(
+            errors=errors_to_graphene(serializer.errors)
+        )
+
+
 class Mutation(graphene.ObjectType):
     create_campaign = CreateCampaign.Field()
     edit_campaign = EditCampaign.Field()
+    add_campaign_product = AddCampaignProductMutation.Field()
