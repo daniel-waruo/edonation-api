@@ -14,7 +14,7 @@ class CreateProduct(graphene.Mutation):
         name = graphene.String(required=True)
         price = graphene.Decimal(required=True)
         description = graphene.String(required=True)
-        images = graphene.List(graphene.String)
+        image = graphene.String(required=True)
 
     def mutate(self, info, **kwargs):
         # get request object
@@ -41,7 +41,7 @@ class EditProduct(graphene.Mutation):
         name = graphene.String()
         price = graphene.Decimal()
         description = graphene.String()
-        images = graphene.List(graphene.String)
+        image = graphene.String()
 
     def mutate(self, info, **kwargs):
         # get request object
