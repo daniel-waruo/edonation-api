@@ -3,6 +3,7 @@ import graphene
 from accounts.schema.types import Error, errors_to_graphene
 from campaigns.serializers import CampaignSerializer, CampaignProductSerializer
 from .types import CampaignType, CampaignProductType
+from ..models import Campaign
 
 
 class CreateCampaign(graphene.Mutation):
@@ -107,7 +108,59 @@ class AddCampaignProductMutation(graphene.Mutation):
         )
 
 
+class ApproveCampaignMutation(graphene.Mutation):
+    campaign = graphene.Field(CampaignType)
+    errors = graphene.List(Error)
+
+    class Arguments:
+        id = graphene.Int(required=True)
+
+    def mutate(self, info, **kwargs):
+        if not Campaign.objects.filter(id=kwargs["id"]).exists():
+            return ApproveCampaignMutation(
+                errors=[
+                    Error(
+                        field="non_field_errors",
+                        messages=["Invalid campaign ID"]
+                    )
+                ]
+            )
+        campaign = Campaign.objects.get(id=kwargs["id"])
+        campaign.is_approved = True
+        campaign.save()
+        return ApproveCampaignMutation(
+            campaign=campaign
+        )
+
+
+class DisapproveCampaignMutation(graphene.Mutation):
+    campaign = graphene.Field(CampaignType)
+    errors = graphene.List(Error)
+
+    class Arguments:
+        id = graphene.Int(required=True)
+
+    def mutate(self, info, **kwargs):
+        if not Campaign.objects.filter(id=kwargs["id"]).exists():
+            return DisapproveCampaignMutation(
+                errors=[
+                    Error(
+                        field="non_field_errors",
+                        messages=["Invalid campaign ID"]
+                    )
+                ]
+            )
+        campaign = Campaign.objects.get(id=kwargs["id"])
+        campaign.is_approved = False
+        campaign.save()
+        return DisapproveCampaignMutation(
+            campaign=campaign
+        )
+
+
 class Mutation(graphene.ObjectType):
     create_campaign = CreateCampaign.Field()
     edit_campaign = EditCampaign.Field()
     add_campaign_product = AddCampaignProductMutation.Field()
+    approve_campaign = ApproveCampaignMutation.Field()
+    disapprove_campaign = DisapproveCampaignMutation.Field()

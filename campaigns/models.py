@@ -28,13 +28,19 @@ class Campaign(models.Model):
 @receiver(post_save, sender=Campaign)
 def save_image_on_cloudcare(**kwargs):
     campaign = kwargs['instance']
-    File(campaign.image.cdn_url).store()
+    try:
+        File(campaign.image.cdn_url).store()
+    except Exception:
+        pass
 
 
 @receiver(post_delete, sender=Campaign)
 def delete_image_on_cloudcare(**kwargs):
     campaign = kwargs['instance']
-    File(campaign.image.cdn_url).delete()
+    try:
+        File(campaign.image.cdn_url).store()
+    except Exception:
+        pass
 
 
 class CampaignProduct(models.Model):
