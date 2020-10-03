@@ -18,6 +18,7 @@ class Campaign(models.Model):
     description = models.TextField(null=True)
     image = ImageField(null=True)
     is_approved = models.BooleanField(default=False)
+    deleted = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         self.name = self.name.lower()
@@ -47,6 +48,9 @@ class CampaignProduct(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='products')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     target = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        unique_together = ('campaign', 'product')
 
     @property
     def target_value(self):

@@ -27,4 +27,7 @@ class Query(graphene.ObjectType):
     products = graphene.List(ProductType, query=graphene.String())
 
     def resolve_products(self, info, **kwargs):
-        return Product.objects.all()
+        products = Product.objects.filter(deleted=False)
+        if kwargs.get("query"):
+            products = products.filter(name__icontains=kwargs.get("query"))
+        return products

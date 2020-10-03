@@ -71,6 +71,30 @@ class EditProduct(graphene.Mutation):
         )
 
 
+class DeleteProduct(graphene.Mutation):
+    success = graphene.Boolean()
+    errors = graphene.List(Error)
+
+    class Arguments:
+        id = graphene.Int(required=True)
+
+    def mutate(self, info, **kwargs):
+        if not Product.objects.filter(id=kwargs["id"]).exists():
+            return DeleteProduct(
+                errors=[
+                    Error(
+                        field="non_field_errors",
+                        messages=["Invalid Product ID"]
+                    )
+                ],
+            )
+        product = Product.objects.get(id=kwargs["id"])
+        product.deleted = True
+        product.save()
+        return DeleteProduct(success=True)
+
+
 class Mutation(graphene.ObjectType):
     create_product = CreateProduct.Field()
     edit_product = EditProduct.Field()
+    delete_product = DeleteProduct.Field()

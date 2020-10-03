@@ -37,6 +37,8 @@ class Product(models.Model):
     slug = models.SlugField(unique=True, null=True)
     description = models.TextField(null=True)
     timestamp = models.DateTimeField(auto_now=True)
+    active = models.BooleanField(default=True)
+    deleted = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         self.name = self.name.lower()

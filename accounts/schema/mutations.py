@@ -2,7 +2,7 @@ import graphene
 from rest_auth.serializers import PasswordChangeSerializer
 
 from accounts.schema.types import Error, errors_to_graphene, UserType
-from accounts.serializers import LoginSerializer, CreateAdminUserSerializer, PasswordResetSerializer
+from accounts.serializers import LoginSerializer, CreateAdminUserSerializer, PasswordResetSerializer, RegisterSerializer
 
 
 class LoginMutation(graphene.Mutation):
@@ -156,8 +156,37 @@ class ChangePasswordMutation(graphene.Mutation):
         )
 
 
+class RegisterUserMutation(graphene.Mutation):
+    success = graphene.Boolean()
+    errors = graphene.List(Error)
+
+    class Arguments:
+        first_name = graphene.String(required=True)
+        last_name = graphene.String(required=True)
+        email = graphene.String(required=True)
+        password1 = graphene.String(required=True)
+        password2 = graphene.String(required=True)
+
+    def mutate(self, info, **kwargs):
+        serializer = RegisterSerializer(
+            data=kwargs,
+            context={
+                "request": info.context
+            }
+        )
+        if not serializer.is_valid():
+            return RegisterUserMutation(
+                errors=errors_to_graphene(serializer.errors)
+            )
+        serializer.save(request=info.context)
+        return RegisterUserMutation(
+            success=True
+        )
+
+
 class Mutation(graphene.ObjectType):
     login = LoginMutation.Field()
+    register = RegisterUserMutation.Field()
     create_admin_user = CreateAdminUserMutation.Field()
     edit_user_profile = EditUserProfileMutation.Field()
     reset_password = ResetPasswordMutation.Field()

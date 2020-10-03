@@ -158,9 +158,90 @@ class DisapproveCampaignMutation(graphene.Mutation):
         )
 
 
+class DeleteCampaign(graphene.Mutation):
+    success = graphene.Boolean()
+    errors = graphene.List(Error)
+
+    class Arguments:
+        id = graphene.Int(required=True)
+
+    def mutate(self, info, **kwargs):
+        if not Campaign.objects.filter(id=kwargs["id"]).exists():
+            return DeleteCampaign(
+                errors=[
+                    Error(
+                        field="non_field_errors",
+                        messages=["Invalid Campaign ID"]
+                    )
+                ],
+            )
+        campaign = Campaign.objects.get(id=kwargs["id"])
+        campaign.deleted = True
+        campaign.save()
+        return DeleteCampaign(success=True)
+
+
+class DeleteCampaignProduct(graphene.Mutation):
+    success = graphene.Boolean()
+    errors = graphene.List(Error)
+
+    class Arguments:
+        campaign_id = graphene.Int(required=True)
+        product_id = graphene.Int(required=True)
+
+    def mutate(self, info, **kwargs):
+        campaign_id = kwargs["campaign_id"]
+        product_id = kwargs["product_id"]
+        if not Campaign.objects.filter(id=campaign_id).exists():
+            return DeleteCampaignProduct(
+                errors=[
+                    Error(
+                        field="non_field_errors",
+                        messages=["Invalid Campaign ID"]
+                    )
+                ],
+            )
+        campaign = Campaign.objects.get(id=campaign_id)
+        campaign_products = campaign.products.filter(product_id=product_id)
+        campaign_products.delete()
+        return DeleteCampaignProduct(success=True)
+
+
+class UpdateCampaignProduct(graphene.Mutation):
+    product = graphene.Field(CampaignProductType)
+    errors = graphene.List(Error)
+
+    class Arguments:
+        campaign_id = graphene.Int(required=True)
+        product_id = graphene.Int(required=True)
+        target = graphene.Int(required=True)
+
+    def mutate(self, info, **kwargs):
+        campaign_id = kwargs["campaign_id"]
+        product_id = kwargs["product_id"]
+        target = kwargs["target"]
+        if not Campaign.objects.filter(id=campaign_id).exists():
+            return UpdateCampaignProduct(
+                errors=[
+                    Error(
+                        field="non_field_errors",
+                        messages=["Invalid Campaign ID"]
+                    )
+                ],
+            )
+        campaign = Campaign.objects.get(id=campaign_id)
+        campaign_product = campaign.products.get(product_id=product_id)
+        campaign_product.target = target
+        campaign_product.save()
+        return UpdateCampaignProduct(product=campaign_product)
+
+
 class Mutation(graphene.ObjectType):
     create_campaign = CreateCampaign.Field()
     edit_campaign = EditCampaign.Field()
     add_campaign_product = AddCampaignProductMutation.Field()
     approve_campaign = ApproveCampaignMutation.Field()
     disapprove_campaign = DisapproveCampaignMutation.Field()
+    delete_campaign = DeleteCampaign.Field()
+    delete_campaign_product = DeleteCampaignProduct.Field()
+    update_campaign_product = UpdateCampaignProduct.Field()

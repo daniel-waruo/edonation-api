@@ -33,6 +33,15 @@ def errors_to_graphene(errors: dict):
 
 
 class UserType(DjangoObjectType):
+    from campaigns.schema.types import CampaignType
+    campaigns = graphene.List(CampaignType, query=graphene.String())
+
+    def resolve_campaigns(self: User, info, **kwargs):
+        campaigns = self.campaigns.filter(deleted=False)
+        if kwargs.get("query"):
+            campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
+        return campaigns
+
     class Meta:
         model = User
         exclude = ('password',)
