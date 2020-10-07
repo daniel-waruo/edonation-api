@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+
 from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'sessions',
     # third party applications
     'rest_framework',
+    'rest_framework.authtoken',
     'knox',
     'rest_auth',
     'rest_auth.registration',
@@ -173,7 +175,6 @@ LOGOUT_ON_PASSWORD_CHANGE = False
 
 EMAIL_CONFIRMATION_HMAC = False
 EMAIL_CONFIRMATION_COOLDOWN = 60 * 60 * 60 * 3
-
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'user-session',
