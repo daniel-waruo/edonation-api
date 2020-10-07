@@ -7,6 +7,7 @@ from graphene_django.converter import convert_django_field
 from graphene_django.filter import DjangoFilterConnectionField
 from pyuploadcare.dj.models import ImageField
 
+from cart.models import Cart
 from products.models import Product, Category, ProductImage
 
 
@@ -51,10 +52,11 @@ class ProductType(DjangoObjectType):
     def resolve_name(self: Product, info):
         return self.name.title()
 
-    images = graphene.List(graphene.String)
+    in_cart = graphene.Boolean()
 
-    def resolve_images(self: Product, info, **kwargs):
-        return list(map(lambda x: x.url, self.images.all()))
+    def resolve_in_cart(self: Product, info):
+        cart = Cart.objects.get_from_request(info.context)
+        return cart.products.filter(product_id=self.id).exists()
 
 
 class ProductImageType(DjangoObjectType):
@@ -94,8 +96,8 @@ class FilterProducts(graphene.ObjectType):
 
     def resolve_filter_price(self, info, **kwargs):
         products = self.all_products
-        price_dict = products.aggregate(Min('discount_price'), Max('discount_price'))
+        price_dict = products.aggregate(Min('price'), Max('price'))
         return FilterPriceType(
-            min=price_dict['discount_price__min'],
-            max=price_dict['discount_price__max']
+            min=price_dict['price__min'],
+            max=price_dict['price__max']
         )

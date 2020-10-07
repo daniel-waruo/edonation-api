@@ -2,7 +2,7 @@ from functools import reduce
 
 from django.contrib.postgres.search import SearchQuery, SearchVector, SearchRank
 
-from business.products.models import Product
+from products.models import Product
 
 
 def filter_products(kwargs):

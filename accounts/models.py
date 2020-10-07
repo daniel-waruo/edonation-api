@@ -48,14 +48,7 @@ class User(AbstractUser):
 
     objects = UserManager()
 
-    def is_voted(self, election):
-        return self.votes.filter(
-            election=election
-        ).exists()
 
-
-# generate unique username if username is blank
-# this fixes google's lack of a username
 @receiver(pre_save, sender=User)
 def generate_anonymous_username(**kwargs):
     user = kwargs['instance']

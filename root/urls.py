@@ -20,6 +20,7 @@ from graphene_django.views import GraphQLView
 from django.conf.urls.static import static
 from django.conf import settings
 from accounts.views import DRFAuthenticatedGraphQLView
+from payments.views import notification_callback
 
 urlpatterns = [
     ############################
@@ -32,8 +33,8 @@ urlpatterns = [
     #############################
 
     # home page
-    path('', lambda request: JsonResponse({"data": "Welcome to the Voting API"})),
-
+    path('', lambda request: JsonResponse({"data": "Welcome to the E-Donation API"})),
+    path('session', lambda request: JsonResponse({"data": request.session.session_key})),
     # accounts
     path('accounts/', include('accounts.urls')),
 
@@ -43,5 +44,10 @@ urlpatterns = [
 
     path("graphi-ql", GraphQLView.as_view(graphiql=True)),
     path("graph-ql", DRFAuthenticatedGraphQLView.as_view()),
+
+    ############################
+    # AT NOTIFICATION URLS
+    ############################
+    path("at/notification-callback", notification_callback),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

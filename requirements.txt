@@ -19,3 +19,5 @@ django-cors-headers
 
 graphene_django
 django-filter
+
+africastalking

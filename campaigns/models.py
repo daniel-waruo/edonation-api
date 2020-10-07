@@ -55,3 +55,9 @@ class CampaignProduct(models.Model):
     @property
     def target_value(self):
         return self.target * self.product.price
+
+
+class CampaignProfile(models.Model):
+    """this is the profile of the user using the campaign"""
+    paid = models.BooleanField(default=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='campaign_profile')

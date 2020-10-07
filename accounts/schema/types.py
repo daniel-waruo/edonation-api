@@ -4,6 +4,7 @@ from graphene_django import DjangoObjectType
 from rest_auth.models import TokenModel
 
 from accounts.models import User
+from campaigns.models import CampaignProfile
 
 
 class Error(graphene.ObjectType):
@@ -41,6 +42,11 @@ class UserType(DjangoObjectType):
         if kwargs.get("query"):
             campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
         return campaigns
+
+    def resolve_campaign_profile(self: User, info, **kwargs):
+        if hasattr(self, 'campaign_profile'):
+            return self.campaign_profile
+        return CampaignProfile.objects.create(user=self)
 
     class Meta:
         model = User

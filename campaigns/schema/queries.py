@@ -25,12 +25,41 @@ class Query(graphene.ObjectType):
                 return Campaign.objects.get(slug=slug)
         return None
 
+    donate_campaign = graphene.Field(
+        CampaignType,
+        id=graphene.ID(),
+        slug=graphene.String()
+    )
+
+    def resolve_donate_campaign(self, info, **kwargs):
+        slug = kwargs.get("slug")
+        campaign = None
+        if kwargs.get("id"):
+            if Campaign.objects.filter(id=kwargs.get("id")).exists():
+                campaign = Campaign.objects.get(id=kwargs.get("id"))
+        if slug:
+            if Campaign.objects.filter(slug=slug).exists():
+                campaign = Campaign.objects.get(slug=slug)
+        if campaign:
+            if campaign.is_approved:
+                return campaign
+        return None
+
     campaigns = graphene.List(CampaignType, query=graphene.String())
 
     def resolve_campaigns(self, info, **kwargs):
         campaigns = Campaign.objects.filter(deleted=False)
         if kwargs.get("query"):
             campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
+        return campaigns
+
+    donate_campaigns = graphene.List(CampaignType, query=graphene.String())
+
+    def resolve_donate_campaigns(self, info, **kwargs):
+        campaigns = Campaign.objects.filter(deleted=False)
+        if kwargs.get("query"):
+            campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
+        campaigns = campaigns.filter(is_approved=True)
         return campaigns
 
     add_products = graphene.List(ProductType, id=graphene.Int(required=True), query=graphene.String())

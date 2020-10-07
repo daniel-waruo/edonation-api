@@ -36,6 +36,7 @@ class Product(models.Model):
     image = ImageField(null=True)
     slug = models.SlugField(unique=True, null=True)
     description = models.TextField(null=True)
+    featured = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now=True)
     active = models.BooleanField(default=True)
     deleted = models.BooleanField(default=False)

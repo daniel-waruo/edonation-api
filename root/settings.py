@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -41,6 +42,9 @@ INSTALLED_APPS = [
     'accounts',
     'products',
     'campaigns',
+    'cart',
+    'payments',
+    'sessions',
     # third party applications
     'rest_framework',
     'knox',
@@ -60,6 +64,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'sessions.middleware.UserSessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -93,8 +98,11 @@ WSGI_APPLICATION = 'root.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ.get("DB_NAME"),
+        'USER': os.environ.get("DB_USER"),
+        'PASSWORD': os.environ.get("DB_PASSWORD"),
+        'HOST': os.environ.get("DB_HOST")
     }
 }
 
@@ -166,9 +174,13 @@ LOGOUT_ON_PASSWORD_CHANGE = False
 EMAIL_CONFIRMATION_HMAC = False
 EMAIL_CONFIRMATION_COOLDOWN = 60 * 60 * 60 * 3
 
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'user-session',
+]
+
 # CORS CONFIGURATION
 CORS_ORIGIN_ALLOW_ALL = True
-
 CORS_ORIGIN_WHITELIST = []
 
 if os.environ.get('FRONT_END_URLS'):
@@ -199,7 +211,10 @@ UPLOADCARE = {
 
 # REST FRAMEWORK CONFIGURATION
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': ('accounts.auth.TokenAuthentication',),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'accounts.auth.TokenAuthentication',
+    ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
@@ -217,8 +232,17 @@ REST_AUTH_SERIALIZERS = {
     'LOGIN_SERIALIZER': 'accounts.serializers.LoginSerializer'
 }
 
-# STATIC FILES CONFIGURATION
+# CAMPAIGN FEE PAYMENT
+CAMPAIGN_FEE = float(os.environ.get("CAMPAIGN_FEE", 100.0))
 
+# AFRICA'S TALKING CONFIGURATION
+AT_PAYMENT_PRODUCT = os.environ.get("AT_PAYMENT_PRODUCT")
+AT_USERNAME = os.environ.get("AT_USERNAME")
+AT_API_KEY = os.environ.get("AT_API_KEY")
+
+# SESSION SETTINGS
+SESSION_COOKIE_SAMESITE = "None"
+# STATIC FILES CONFIGURATION
 STATIC_ROOT = 'staticfiles'
 
 # Configure Django App for Heroku.
