@@ -1,10 +1,10 @@
 import graphene
 
-from campaigns.models import Campaign
+from campaigns.models import Campaign, CampaignProduct
 from products.models import Product
 from products.schema.types import ProductType
 from .types import (
-    CampaignType
+    CampaignType, CampaignProductType
 )
 
 
@@ -74,3 +74,11 @@ class Query(graphene.ObjectType):
         if kwargs.get("query"):
             products = products.filter(name__icontains=kwargs.get("query"))
         return products
+
+    campaign_product = graphene.Field(CampaignProductType, id=graphene.ID(required=True))
+
+    def resolve_campaign_product(self, info, **kwargs):
+        campaign_product_id = kwargs.get("id")
+        if CampaignProduct.objects.filter(id=campaign_product_id).exists():
+            return CampaignProduct.objects.get(id=campaign_product_id)
+        return None

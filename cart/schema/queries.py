@@ -7,12 +7,15 @@ from cart.schema.types import CartType, CartProductType
 class Query(graphene.ObjectType):
     cart = graphene.Field(CartType)
 
-    def resolve_cart(self, info):
+    def resolve_cart(self, info, **kwargs):
         request = info.context
         # get and return cart object type
         return Cart.objects.get_from_request(request)
 
-    cart_products = graphene.List(CartProductType)
+    cart_products = graphene.List(CartProductType, campaign=graphene.String(required=False))
 
     def resolve_cart_products(self, info, **kwargs):
-        return CartProduct.objects.filter(cart=self.cart)
+        cart_products = CartProduct.objects.filter(cart=self.cart)
+        if kwargs.get("campaign"):
+            return cart_products.filter(product__campaign__slug=kwargs.get("campaign"))
+        return cart_products

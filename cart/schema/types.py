@@ -7,21 +7,6 @@ from cart.models import Cart, CartProduct
 from products.schema.types import ProductType
 
 
-class CartType(DjangoObjectType):
-    class Meta:
-        model = Cart
-
-    number = graphene.Int()
-
-    def resolve_number(self: Cart, info):
-        return self.number_of_products()
-
-    total = graphene.String()
-
-    def resolve_total(self: Cart, info):
-        return self.total
-
-
 class CartProductType(DjangoObjectType):
     class Meta:
         model = CartProduct
@@ -40,3 +25,31 @@ class CartProductType(DjangoObjectType):
 
     def resolve_total(self: CartProduct, info):
         return self.quantity * self.product.product.price
+
+
+class CartType(DjangoObjectType):
+    class Meta:
+        model = Cart
+
+    products = graphene.List(CartProductType, campaign=graphene.String(required=False))
+
+    def resolve_products(self: Cart, info, **kwargs):
+        if kwargs.get("campaign"):
+            return self.products.filter(product__campaign__slug=kwargs.get("campaign"))
+        return self.products.all()
+
+    number = graphene.Int(campaign=graphene.String(required=False))
+
+    def resolve_number(self: Cart, info, **kwargs):
+        products = self.products.all()
+        if kwargs.get("campaign"):
+            products = self.products.filter(product__campaign__slug=kwargs.get("campaign"))
+        return self.number_of_products(queryset=products)
+
+    total = graphene.String(campaign=graphene.String(required=False))
+
+    def resolve_total(self: Cart, info, **kwargs):
+        products = self.products.all()
+        if kwargs.get("campaign"):
+            products = self.products.filter(product__campaign__slug=kwargs.get("campaign"))
+        return self.total(queryset=products)

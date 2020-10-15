@@ -52,7 +52,8 @@ class Cart(models.Model):
         Returns:
             cart_product - it returns the updated cart product
         """
-        if self.products.filter(product=product_pk).exists():
+        if self.products.filter(product_id=product_pk).exists():
+            print(product_pk)
             return self.update_product_number(product_pk, product_quantity)
         return CartProduct.objects.create(
             quantity=product_quantity,
@@ -73,18 +74,25 @@ class Cart(models.Model):
             return cart_product
         raise NoProductToDelete("The product id {0} cannot be deleted.".format(product_pk))
 
-    def number_of_products(self):
+    def number_of_products(self, queryset=None):
         """get the number of products in the cart"""
         if self.products.all().exists():
+            if queryset:
+                return queryset.aggregate(
+                    cart_total=Sum("quantity")
+                )["cart_total"]
             return self.products.aggregate(
                 cart_total=Sum("quantity")
             )["cart_total"]
         return 0
 
-    @property
-    def total(self):
+    def total(self, queryset=None):
         """get the total price value of items in the cart """
         if self.products.all().exists():
+            if queryset:
+                return queryset.aggregate(
+                    cart_total=Sum(F("quantity") * F("product__product__price"), output_field=FloatField())
+                )["cart_total"]
             total = self.products.aggregate(
                 cart_total=Sum(F("quantity") * F("product__product__price"), output_field=FloatField())
             )["cart_total"]

@@ -183,7 +183,7 @@ class CartModelTestCase(TestCase):
 
         # assert cart total price worth
         self.assertEqual(
-            cart.total,
+            cart.total(),
             Money(9 * 200, 'KES'),
             "Total Number of Product Not Found"
         )
