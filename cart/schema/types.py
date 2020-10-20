@@ -1,7 +1,7 @@
 import graphene
 from graphene_django import DjangoObjectType
 
-from campaigns.schema.types import CampaignType
+from campaigns.schema.types import CampaignType, CampaignProductType
 from cart.models import Cart, CartProduct
 # This is configured in the CategoryNode's Meta class (as you can see below)
 from products.schema.types import ProductType
@@ -10,6 +10,11 @@ from products.schema.types import ProductType
 class CartProductType(DjangoObjectType):
     class Meta:
         model = CartProduct
+
+    campaign_product = graphene.Field(CampaignProductType)
+
+    def resolve_campaign_product(self: CartProduct, info):
+        return self.product
 
     product = graphene.Field(ProductType)
 
