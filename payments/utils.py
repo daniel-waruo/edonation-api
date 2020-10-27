@@ -57,3 +57,41 @@ def pay_campaign_fee(phone, user):
             reason_failed=message
         )
         return False, transaction
+
+
+def pay_donation(donation):
+    """
+    pay for the donation
+    Args:
+        donation - the donation to be paid for
+    Returns:
+        tuple(success_status,transaction) - returns a success message and the transaction
+    """
+    from payments.models import DonationTransaction
+    transaction = DonationTransaction.objects.create(donation)
+    try:
+        response = pay.mobile_checkout(
+            product_name=payment_product,
+            phone_number=donation.donor_phone,
+            currency_code="KES",
+            amount=donation.amount,
+            metadata={
+                'type': 'DonationTransaction',
+                'transaction_id': str(transaction.id)
+            }
+        )
+        if response.get('status') == 'PendingConfirmation':
+            transaction.set_pending(response['transactionId'])
+            return True, transaction
+        transaction.set_fail(
+            transaction_id=response.get('transactionId'),
+            reason_failed=response.get('description')
+        )
+        return False, transaction
+    except Exception as e:
+        message = str(e.args)
+        transaction.set_fail(
+            transaction_id=None,
+            reason_failed=message
+        )
+        return False, transaction

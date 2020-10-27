@@ -1,8 +1,8 @@
 import graphene
 
 from accounts.schema.types import Error, errors_to_graphene
-from payments.serializers import CampaignFeePaymentSerializer
-from .types import CampaignFeeTransactionType
+from payments.serializers import CampaignFeePaymentSerializer, DonationPaymentSerializer
+from .types import CampaignFeeTransactionType, DonationTransactionType
 
 
 class PayCampaignFeeMutation(graphene.Mutation):
@@ -34,8 +34,8 @@ class PayCampaignFeeMutation(graphene.Mutation):
             return PayCampaignFeeMutation(
                 success=False,
                 errors=[Error(
-                    field='non_field_errors',
-                    errors=[f"{transaction.reason_failed}"]
+                    field='nonFieldErrors',
+                    messages=[f"{transaction.reason_failed}"]
                 )]
             )
         return PayCampaignFeeMutation(
@@ -43,5 +43,47 @@ class PayCampaignFeeMutation(graphene.Mutation):
         )
 
 
+class PayDonationMutation(graphene.Mutation):
+    """ Pay for the donation and donate products
+        Args:
+            success - whether the payment was successful or not
+            errors - errors that may have occurred in the process
+        """
+    success = graphene.Boolean()
+    transaction = graphene.Field(DonationTransactionType)
+    errors = graphene.List(Error)
+
+    class Arguments:
+        donor_name = graphene.String(required=True)
+        donor_phone = graphene.String(required=True)
+        donor_email = graphene.String(required=True)
+        campaign_slug = graphene.String()
+
+    def mutate(self, info, **kwargs):
+        """ Mutation that either returns a success boolean value or some errors"""
+        serializer = DonationPaymentSerializer(
+            context={'request': info.context},
+            data=kwargs
+        )
+        if serializer.is_valid():
+            success_status, transaction = serializer.save()
+            if success_status:
+                return PayDonationMutation(
+                    success=success_status,
+                    transaction=transaction
+                )
+            return PayDonationMutation(
+                success=False,
+                errors=[Error(
+                    field='nonFieldErrors',
+                    messages=[f"Payment Checkout Failed"]
+                )]
+            )
+        return PayDonationMutation(
+            errors=errors_to_graphene(serializer.errors)
+        )
+
+
 class Mutation(graphene.ObjectType):
     pay_campaign_fee = PayCampaignFeeMutation.Field()
+    pay_donation = PayDonationMutation.Field()

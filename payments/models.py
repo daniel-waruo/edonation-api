@@ -1,6 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from cart.models import CartProduct
+from donations.models import Donation
+
 User = get_user_model()
 
 
@@ -85,3 +88,42 @@ class CampaignFeeTransaction(Transaction):
         campaign_profile = self.user.campaign_profile
         campaign_profile.paid = True
         campaign_profile.save()
+
+
+class DonationTransactionManager(models.Manager):
+    def create(self, donation):
+        return super().create(
+            amount=donation.amount,
+            donation=donation,
+            phone=donation.donor_phone,
+        )
+
+
+class DonationTransaction(Transaction):
+    donation = models.OneToOneField(
+        Donation,
+        on_delete=models.CASCADE,
+        related_name="transaction"
+    )
+
+    objects = DonationTransactionManager()
+
+    def set_fail(self, transaction_id, reason_failed):
+        super(DonationTransaction, self).set_fail(transaction_id, reason_failed)
+        self.donation.set_fail()
+
+    def set_success(self, transaction_id, mpesa_code, transaction_cost):
+        self.mpesa_code = mpesa_code
+        self.state = 'success'
+        self.transaction_id = transaction_id
+        # the amount of money it cost us to
+        # make the transaction
+        self.transaction_cost = transaction_cost
+        self.save()
+        # set donation as successful
+        self.donation.set_success()
+        # remove all donated products from the cart
+        CartProduct.objects.filter(
+            cart=self.donation.cart,
+            product__donationproduct__donation=self.donation
+        ).delete()
