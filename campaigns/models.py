@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Sum
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.utils.text import slugify
@@ -19,6 +20,10 @@ class Campaign(models.Model):
     image = ImageField(null=True)
     is_approved = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+
+    start_date = models.DateTimeField(null=True)
+    end_date = models.DateTimeField(null=True)
 
     def save(self, *args, **kwargs):
         self.name = self.name.lower()
@@ -46,7 +51,7 @@ def delete_image_on_cloudcare(**kwargs):
 
 class CampaignProduct(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='products')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='campaign_products')
     target = models.PositiveIntegerField(default=1)
 
     class Meta:
@@ -55,6 +60,19 @@ class CampaignProduct(models.Model):
     @property
     def target_value(self):
         return self.target * self.product.price
+
+    def valid_donation_products(self):
+        return self.donation_products.objects.filter(
+            donation__payment_status="success"
+        ).distinct()
+
+    def number_donated(self):
+        donation_products = self.valid_donation_products()
+        if not donation_products:
+            return 0
+        return donation_products.aggregate(
+            number_donated=Sum("quantity")
+        )["number_donated"]
 
 
 class CampaignProfile(models.Model):

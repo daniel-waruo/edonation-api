@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Sum
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.utils.text import slugify
@@ -40,6 +41,23 @@ class Product(models.Model):
     timestamp = models.DateTimeField(auto_now=True)
     active = models.BooleanField(default=True)
     deleted = models.BooleanField(default=False)
+
+    @property
+    def donation_products(self):
+        from donations.models import DonationProduct
+        return DonationProduct.objects.filter(
+            product__product=self,
+            delivered=False,
+            donation__payment_status="success"
+        ).distinct()
+
+    @property
+    def number_donated(self):
+        if not self.donation_products:
+            return 0
+        return self.donation_products.aggregate(
+            number_donated=Sum("quantity")
+        )["number_donated"]
 
     def save(self, *args, **kwargs):
         self.name = self.name.lower()

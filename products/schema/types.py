@@ -7,7 +7,7 @@ from graphene_django.converter import convert_django_field
 from graphene_django.filter import DjangoFilterConnectionField
 from pyuploadcare.dj.models import ImageField
 
-from cart.models import Cart
+from donations.models import DonationProduct
 from products.models import Product, Category, ProductImage
 
 
@@ -52,11 +52,13 @@ class ProductType(DjangoObjectType):
     def resolve_name(self: Product, info):
         return self.name.title()
 
-    in_cart = graphene.Boolean()
+    number_donated = graphene.Int()
 
-    def resolve_in_cart(self: Product, info):
-        cart = Cart.objects.get_from_request(info.context)
-        return cart.products.filter(product_id=self.id).exists()
+    def resolve_number_donated(self, info):
+        user = info.context.user
+        if not user.is_authenticated:
+            return 0
+        return self.number_donated
 
 
 class ProductImageType(DjangoObjectType):

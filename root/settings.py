@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'payments',
     'sessions',
     'donations',
+    'deliveries',
     # third party applications
     'rest_framework',
     'rest_framework.authtoken',

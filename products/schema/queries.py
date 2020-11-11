@@ -73,3 +73,23 @@ class Query(graphene.ObjectType):
         products = Product.objects.filter(deleted=False)
         products = products.filter(featured=True)
         return products
+
+    donated_products = graphene.List(ProductType)
+
+    def resolve_donated_products(self, info, **kwargs):
+        """
+        Get all the products donated to a certain user
+        :param info:
+        :param kwargs:
+        :return:
+        """
+        user = info.context.user
+        if not user.is_authenticated:
+            return None
+
+        donated_products = Product.objects.filter(
+            deleted=False,
+            campaign_products__campaign__owner=user,
+            campaign_products__donation_products__donation__payment_status="success",
+        ).distinct()
+        return donated_products

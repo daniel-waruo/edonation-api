@@ -32,7 +32,7 @@ class DonationManager(models.Manager):
 
 
 class Donation(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    cart = models.ForeignKey(Cart, null=True, on_delete=models.SET_NULL)
     donor_name = models.CharField(max_length=50, null=True)
     donor_phone = models.CharField(max_length=15)
     donor_email = models.EmailField(null=True)
@@ -70,8 +70,9 @@ class Donation(models.Model):
 
 class DonationProduct(models.Model):
     donation = models.ForeignKey(Donation, on_delete=models.CASCADE, related_name="products")
-    product = models.ForeignKey(CampaignProduct, on_delete=models.CASCADE)
+    product = models.ForeignKey(CampaignProduct, on_delete=models.CASCADE, related_name="donation_products")
     quantity = models.PositiveIntegerField(default=1)
+    delivered = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('donation', 'product')
