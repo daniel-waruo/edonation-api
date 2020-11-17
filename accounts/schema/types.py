@@ -2,6 +2,7 @@ import graphene
 from graphene.utils.str_converters import to_camel_case
 from graphene_django import DjangoObjectType
 from rest_auth.models import TokenModel
+
 from accounts.models import User
 from campaigns.models import CampaignProfile
 
@@ -37,7 +38,15 @@ class UserType(DjangoObjectType):
     campaigns = graphene.List(CampaignType, query=graphene.String())
 
     def resolve_campaigns(self: User, info, **kwargs):
-        campaigns = self.campaigns.filter(deleted=False)
+        campaigns = self.campaigns.filter(deleted=False,is_active=True)
+        if kwargs.get("query"):
+            campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
+        return campaigns
+
+    complete_campaigns = graphene.List(CampaignType, query=graphene.String())
+
+    def resolve_complete_campaigns(self: User, info, **kwargs):
+        campaigns = self.campaigns.filter(deleted=False, is_active=False)
         if kwargs.get("query"):
             campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
         return campaigns

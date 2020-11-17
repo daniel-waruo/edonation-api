@@ -7,7 +7,6 @@ from graphene_django.converter import convert_django_field
 from graphene_django.filter import DjangoFilterConnectionField
 from pyuploadcare.dj.models import ImageField
 
-from donations.models import DonationProduct
 from products.models import Product, Category, ProductImage
 
 

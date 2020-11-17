@@ -3,6 +3,7 @@ from time import timezone
 from django.db import models
 from django.db.models import Sum
 from django.utils import timezone
+from pyuploadcare.dj.models import FileField
 
 from campaigns.models import Campaign
 from donations.models import DonationProduct
@@ -17,8 +18,8 @@ class DeliveryManager(models.Manager):
         campaign.end_date = timezone.now()
         # get all the products donated and the number they are donated
         donation_products = DonationProduct.objects.filter(product__campaign=campaign)
-        products = Product.objects.get(
-            campaign_products__donationproduct__in=donation_products
+        products = Product.objects.filter(
+            campaign_products__donation_products__in=donation_products
         ).distinct()
         # create a delivery
         delivery = self.create(
@@ -45,7 +46,12 @@ class DeliveryManager(models.Manager):
 
 
 class Delivery(models.Model):
-    """Track delivery of products after campaign is over """
+    """ Track delivery of products after campaign is over
+    campaign - the campaign whose delivery we are making
+    state - the state of the delivery whether it is pending delivery or it is delivered
+    delivery_form - the form signed by the campaign creator once it is delivered
+    delivery_date - the date the delivery was made
+    """
     campaign = models.OneToOneField(Campaign, on_delete=models.CASCADE)
     state = models.CharField(
         choices=(
@@ -55,7 +61,10 @@ class Delivery(models.Model):
         max_length=10,
         default="pending"
     )
+    delivery_form = FileField(null=True)
     delivery_date = models.DateTimeField(null=True)
+
+    objects = DeliveryManager()
 
 
 class DeliveryProduct(models.Model):

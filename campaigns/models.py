@@ -30,6 +30,13 @@ class Campaign(models.Model):
         self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
+    def complete(self):
+        from deliveries.models import Delivery
+        # create delivery from campaign
+        self.is_active = False
+        Delivery.objects.delivery_from_campaign(self)
+        self.save()
+
 
 @receiver(post_save, sender=Campaign)
 def save_image_on_cloudcare(**kwargs):
@@ -53,9 +60,11 @@ class CampaignProduct(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='products')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='campaign_products')
     target = models.PositiveIntegerField(default=1)
+    deleted = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('campaign', 'product')
+        ordering = ('product',)
 
     @property
     def target_value(self):
