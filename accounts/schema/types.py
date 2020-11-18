@@ -46,7 +46,7 @@ class UserType(DjangoObjectType):
     complete_campaigns = graphene.List(CampaignType, query=graphene.String())
 
     def resolve_complete_campaigns(self: User, info, **kwargs):
-        campaigns = self.campaigns.filter(deleted=False, is_active=False)
+        campaigns = self.campaigns.filter(is_active=False)
         if kwargs.get("query"):
             campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
         return campaigns
