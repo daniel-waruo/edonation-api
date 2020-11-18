@@ -180,6 +180,7 @@ class DeleteCampaign(graphene.Mutation):
         campaign = Campaign.objects.get(id=kwargs["id"])
         campaign.deleted = True
         campaign.save()
+        campaign.complete()
         return DeleteCampaign(success=True)
 
 
