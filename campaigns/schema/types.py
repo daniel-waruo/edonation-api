@@ -67,6 +67,8 @@ class CampaignType(DjangoObjectType):
         ).distinct().aggregate(
             total_donated=Sum("quantity")
         )["total_donated"]
+        if not total_donated:
+            return 0
         progress = int((total_donated / total_target) * 100)
         return progress
 
