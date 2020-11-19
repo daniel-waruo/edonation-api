@@ -56,6 +56,8 @@ class Delivery(models.Model):
     state = models.CharField(
         choices=(
             ("pending", "Pending"),
+            ("processing", "Processing"),
+            ("ready", "Ready"),
             ("delivered", "Delivered")
         ),
         max_length=10,
@@ -65,6 +67,18 @@ class Delivery(models.Model):
     delivery_date = models.DateTimeField(null=True)
 
     objects = DeliveryManager()
+
+    def next_state(self):
+        new_state = "processing"
+        old_state = self.state
+        if old_state == "processing":
+            new_state = "ready"
+        elif old_state == "ready":
+            new_state = "delivered"
+        if old_state == "delivered":
+            new_state = old_state
+        self.state = new_state
+        self.save()
 
 
 class DeliveryProduct(models.Model):

@@ -82,3 +82,43 @@ class Query(graphene.ObjectType):
         if CampaignProduct.objects.filter(id=campaign_product_id).exists():
             return CampaignProduct.objects.get(id=campaign_product_id)
         return None
+
+    closed_campaigns = graphene.List(CampaignType, query=graphene.String())
+
+    def resolve_closed_campaigns(self, info, **kwargs):
+        campaigns = Campaign.objects.filter(delivery__isnull=False)
+        if kwargs.get("query"):
+            campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
+        return campaigns
+
+    pending_campaigns = graphene.List(CampaignType, query=graphene.String())
+
+    def resolve_pending_campaigns(self, info, **kwargs):
+        campaigns = Campaign.objects.filter(delivery__state="pending")
+        if kwargs.get("query"):
+            campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
+        return campaigns
+
+    processing_campaigns = graphene.List(CampaignType, query=graphene.String())
+
+    def resolve_processing_campaigns(self, info, **kwargs):
+        campaigns = Campaign.objects.filter(delivery__state="processing")
+        if kwargs.get("query"):
+            campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
+        return campaigns
+
+    ready_campaigns = graphene.List(CampaignType, query=graphene.String())
+
+    def resolve_ready_campaigns(self, info, **kwargs):
+        campaigns = Campaign.objects.filter(delivery__state="ready")
+        if kwargs.get("query"):
+            campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
+        return campaigns
+
+    delivered_campaigns = graphene.List(CampaignType, query=graphene.String())
+
+    def resolve_delivered_campaigns(self, info, **kwargs):
+        campaigns = Campaign.objects.filter(delivery__state="delivered")
+        if kwargs.get("query"):
+            campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
+        return campaigns

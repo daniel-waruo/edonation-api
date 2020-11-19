@@ -19,3 +19,34 @@ class DeliveryType(DjangoObjectType):
 class DeliveryProductType(DjangoObjectType):
     class Meta:
         model = DeliveryProduct
+
+
+class DeliveryCountType(graphene.ObjectType):
+    all = graphene.Int()
+
+    def resolve_all(self, info):
+        return Delivery.objects.all().count()
+
+    pending = graphene.Int()
+
+    def resolve_pending(self, info):
+        deliveries = Delivery.objects.filter(state="pending")
+        return deliveries.count()
+
+    processing = graphene.Int()
+
+    def resolve_processing(self, info):
+        deliveries = Delivery.objects.filter(state="processing")
+        return deliveries.count()
+
+    ready = graphene.Int()
+
+    def resolve_ready(self, info):
+        deliveries = Delivery.objects.filter(state="ready")
+        return deliveries.count()
+
+    delivered = graphene.Int()
+
+    def resolve_delivered(self, info):
+        deliveries = Delivery.objects.filter(state="delivered")
+        return deliveries.count()
