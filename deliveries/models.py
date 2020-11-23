@@ -18,6 +18,10 @@ class DeliveryManager(models.Manager):
         campaign.end_date = timezone.now()
         # get all the products donated and the number they are donated
         donation_products = DonationProduct.objects.filter(product__campaign=campaign)
+        # if no donation made for this product stop
+        if not donation_products:
+            return
+        # get products that have been donated
         products = Product.objects.filter(
             campaign_products__donation_products__in=donation_products
         ).distinct()
@@ -42,7 +46,6 @@ class DeliveryManager(models.Manager):
                 number=number_donated
             )
         campaign.save()
-        pass
 
 
 class Delivery(models.Model):
@@ -77,6 +80,16 @@ class Delivery(models.Model):
             new_state = "delivered"
         if old_state == "delivered":
             new_state = old_state
+        self.state = new_state
+        self.save()
+
+    def previous_state(self):
+        new_state = "pending"
+        old_state = self.state
+        if old_state == "delivered":
+            new_state = "ready"
+        elif old_state == "ready":
+            new_state = "processing"
         self.state = new_state
         self.save()
 

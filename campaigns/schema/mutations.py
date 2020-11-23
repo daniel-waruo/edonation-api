@@ -14,8 +14,6 @@ class CreateCampaign(graphene.Mutation):
         name = graphene.String(required=True)
         description = graphene.String(required=True)
         image = graphene.String(required=True)
-        start_date = graphene.String(required=True)
-        end_date = graphene.String(required=True)
 
     def mutate(self, info, **kwargs):
         # get request object

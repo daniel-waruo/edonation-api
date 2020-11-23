@@ -48,7 +48,7 @@ class Query(graphene.ObjectType):
     campaigns = graphene.List(CampaignType, query=graphene.String())
 
     def resolve_campaigns(self, info, **kwargs):
-        campaigns = Campaign.objects.filter(deleted=False)
+        campaigns = Campaign.objects.filter(deleted=False, is_active=True)
         if kwargs.get("query"):
             campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
         return campaigns
