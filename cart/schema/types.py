@@ -39,9 +39,10 @@ class CartType(DjangoObjectType):
     products = graphene.List(CartProductType, campaign=graphene.String(required=False))
 
     def resolve_products(self: Cart, info, **kwargs):
+        products = self.products.all()
         if kwargs.get("campaign"):
-            return self.products.filter(product__campaign__slug=kwargs.get("campaign"))
-        return self.products.all()
+            return products.filter(product__campaign__slug=kwargs.get("campaign"))
+        return products
 
     number = graphene.Int(campaign=graphene.String(required=False))
 

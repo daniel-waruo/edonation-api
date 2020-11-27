@@ -75,12 +75,27 @@ class Query(graphene.ObjectType):
             products = products.filter(name__icontains=kwargs.get("query"))
         return products
 
-    campaign_product = graphene.Field(CampaignProductType, id=graphene.ID(required=True))
+    campaign_product = graphene.Field(
+        CampaignProductType,
+        id=graphene.ID(),
+        slug=graphene.String(),
+        campaign_slug=graphene.String(),
+    )
 
     def resolve_campaign_product(self, info, **kwargs):
         campaign_product_id = kwargs.get("id")
-        if CampaignProduct.objects.filter(id=campaign_product_id).exists():
-            return CampaignProduct.objects.get(id=campaign_product_id)
+        campaign_product_slug = kwargs.get("slug")
+        campaign_slug = kwargs.get("campaign_slug")
+        if campaign_product_id:
+            if CampaignProduct.objects.filter(id=campaign_product_id).exists():
+                return CampaignProduct.objects.get(id=campaign_product_id)
+        elif campaign_product_slug:
+            if CampaignProduct.objects.filter(
+                    campaign__slug=campaign_slug,
+                    product__slug=campaign_product_slug).exists():
+                return CampaignProduct.objects.get(
+                    campaign__slug=campaign_slug,
+                    product__slug=campaign_product_slug)
         return None
 
     closed_campaigns = graphene.List(CampaignType, query=graphene.String())
