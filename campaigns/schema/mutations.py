@@ -1,8 +1,8 @@
 import graphene
 
 from accounts.schema.types import Error, errors_to_graphene
-from campaigns.serializers import CampaignSerializer, CampaignProductSerializer
-from .types import CampaignType, CampaignProductType
+from campaigns.serializers import CampaignSerializer, CampaignProductSerializer, ProductRequestSerializer
+from .types import CampaignType, CampaignProductType, ProductRequestType
 from ..models import Campaign
 
 
@@ -287,14 +287,43 @@ class CloseCampaign(graphene.Mutation):
         return CloseCampaign(success=True)
 
 
+class CreateProductRequest(graphene.Mutation):
+    product_request = graphene.Field(ProductRequestType)
+    errors = graphene.List(Error)
+
+    class Arguments:
+        campaign_id = graphene.Int(required=True)
+        request = graphene.String(required=True)
+
+    def mutate(self, info, **kwargs):
+        # get request object
+        request = info.context
+        # check if user is authenticated
+        if not request.user.is_authenticated:
+            return None
+        kwargs["campaign"] = kwargs["campaign_id"]
+        serializer = ProductRequestSerializer(data=kwargs)
+        if serializer.is_valid():
+            return CreateProductRequest(
+                product_request=serializer.save()
+            )
+        return CreateProductRequest(
+            errors=errors_to_graphene(serializer.errors)
+        )
+
+
 class Mutation(graphene.ObjectType):
     create_campaign = CreateCampaign.Field()
     edit_campaign = EditCampaign.Field()
     add_campaign_product = AddCampaignProductMutation.Field()
+
     approve_campaign = ApproveCampaignMutation.Field()
     disapprove_campaign = DisapproveCampaignMutation.Field()
     delete_campaign = DeleteCampaign.Field()
     close_campaign = CloseCampaign.Field()
+
     delete_campaign_product = DeleteCampaignProduct.Field()
     update_campaign_product = UpdateCampaignProduct.Field()
     restore_campaign_product = RestoreCampaignProduct.Field()
+
+    create_product_request = CreateProductRequest.Field()

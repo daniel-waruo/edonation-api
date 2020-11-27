@@ -88,3 +88,17 @@ class CampaignProfile(models.Model):
     """this is the profile of the user using the campaign"""
     paid = models.BooleanField(default=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='campaign_profile')
+
+
+class ProductRequest(models.Model):
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    request = models.TextField()
+    state = models.CharField(
+        choices=(
+            ('pending', "Pending"),
+            ("denied", "Denied"),
+            ("fulfilled", "Fulfilled"),
+        ),
+        default="pending",
+        max_length=10
+    )

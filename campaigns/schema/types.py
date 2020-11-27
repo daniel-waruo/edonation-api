@@ -4,7 +4,7 @@ from graphene_django import DjangoObjectType
 from graphene_django.converter import convert_django_field
 from pyuploadcare.dj.models import ImageField
 
-from campaigns.models import Campaign, CampaignProduct, CampaignProfile
+from campaigns.models import Campaign, CampaignProduct, CampaignProfile, ProductRequest
 from cart.models import Cart
 from donations.models import Donation, DonationProduct
 
@@ -95,3 +95,8 @@ class CampaignType(DjangoObjectType):
 class CampaignProfileType(DjangoObjectType):
     class Meta:
         model = CampaignProfile
+
+
+class ProductRequestType(DjangoObjectType):
+    class Meta:
+        model = ProductRequest
