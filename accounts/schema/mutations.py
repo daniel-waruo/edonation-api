@@ -1,4 +1,6 @@
 import graphene
+from allauth.account import app_settings as allauth_settings
+from allauth.account.utils import complete_signup
 from rest_auth.serializers import PasswordChangeSerializer
 
 from accounts.schema.types import Error, errors_to_graphene, UserType
@@ -178,7 +180,8 @@ class RegisterUserMutation(graphene.Mutation):
             return RegisterUserMutation(
                 errors=errors_to_graphene(serializer.errors)
             )
-        serializer.save(request=info.context)
+        user = serializer.save(request=info.context)
+        complete_signup(info.context._request, user, allauth_settings.EMAIL_VERIFICATION, None)
         return RegisterUserMutation(
             success=True
         )
