@@ -8,7 +8,7 @@ from cart.models import Cart, CartProduct
 class DonationManager(models.Manager):
     def create(self, donor_phone, cart, donor_name=None, donor_email=None, campaign_slug=None):
         donation = super().create(
-            donor_name=donor_name,
+            donor_name=donor_name or "Anonymous",
             donor_phone=donor_phone,
             donor_email=donor_email,
             cart=cart
@@ -33,9 +33,9 @@ class DonationManager(models.Manager):
 
 class Donation(models.Model):
     cart = models.ForeignKey(Cart, null=True, on_delete=models.SET_NULL)
-    donor_name = models.CharField(max_length=50, null=True)
+    donor_name = models.CharField(max_length=50, null=True, blank=True)
     donor_phone = models.CharField(max_length=15)
-    donor_email = models.EmailField(null=True)
+    donor_email = models.EmailField(blank=True, null=True)
     TRANSACTION_STATE = (
         ('pending', 'Pending'),
         ('failed', 'Failed'),

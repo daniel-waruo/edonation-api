@@ -23,12 +23,12 @@ class CampaignFeePaymentSerializer(serializers.Serializer):
 
 
 class DonationPaymentSerializer(serializers.Serializer):
-    donor_name = serializers.CharField()
+    donor_name = serializers.CharField(required=False, allow_blank=True)
     donor_phone = serializers.CharField(
         required=True,
         validators=[RegexValidator(phone_regex, message="Invalid Phone Number")]
     )
-    donor_email = serializers.EmailField()
+    donor_email = serializers.EmailField(required=False, allow_blank=True)
     campaign_slug = serializers.SlugField(required=False)
 
     def save(self, **kwargs):

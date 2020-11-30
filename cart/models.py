@@ -77,7 +77,9 @@ class Cart(models.Model):
     def number_of_products(self, queryset=None):
         """get the number of products in the cart"""
         if self.products.all().exists():
-            if queryset:
+            if queryset is not None:
+                if not queryset:
+                    return 0
                 return queryset.aggregate(
                     cart_total=Sum("quantity")
                 )["cart_total"]
@@ -89,7 +91,9 @@ class Cart(models.Model):
     def total(self, queryset=None):
         """get the total price value of items in the cart """
         if self.products.all().exists():
-            if queryset:
+            if queryset is not None:
+                if not queryset:
+                    return 0
                 return queryset.aggregate(
                     cart_total=Sum(F("quantity") * F("product__product__price"), output_field=FloatField())
                 )["cart_total"]

@@ -54,9 +54,9 @@ class PayDonationMutation(graphene.Mutation):
     errors = graphene.List(Error)
 
     class Arguments:
-        donor_name = graphene.String(required=True)
+        donor_name = graphene.String()
         donor_phone = graphene.String(required=True)
-        donor_email = graphene.String(required=True)
+        donor_email = graphene.String()
         campaign_slug = graphene.String()
 
     def mutate(self, info, **kwargs):

@@ -124,6 +124,5 @@ class DonationTransaction(Transaction):
         self.donation.set_success()
         # remove all donated products from the cart
         CartProduct.objects.filter(
-            cart=self.donation.cart,
-            product__donationproduct__donation=self.donation
+            product__donation_products__in=self.donation.products.all()
         ).delete()
