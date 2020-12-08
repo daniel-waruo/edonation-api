@@ -50,7 +50,6 @@ class CartType(DjangoObjectType):
         products = self.products.all()
         if kwargs.get("campaign"):
             products = self.products.filter(product__campaign__slug=kwargs.get("campaign"))
-        print(products)
         return self.number_of_products(queryset=products)
 
     total = graphene.String(campaign=graphene.String(required=False))
@@ -59,5 +58,4 @@ class CartType(DjangoObjectType):
         products = self.products.all()
         if kwargs.get("campaign"):
             products = self.products.filter(product__campaign__slug=kwargs.get("campaign"))
-        print(products)
         return self.total(queryset=products)

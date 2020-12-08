@@ -4,7 +4,13 @@ from allauth.account.utils import complete_signup
 from rest_auth.serializers import PasswordChangeSerializer
 
 from accounts.schema.types import Error, errors_to_graphene, UserType
-from accounts.serializers import LoginSerializer, CreateAdminUserSerializer, PasswordResetSerializer, RegisterSerializer
+from accounts.serializers import (
+    LoginSerializer,
+    CreateAdminUserSerializer,
+    PasswordResetSerializer,
+    RegisterSerializer,
+    ProfileSerializer
+)
 
 
 class LoginMutation(graphene.Mutation):
@@ -82,22 +88,24 @@ class EditUserProfileMutation(graphene.Mutation):
         """
         first_name = graphene.String(required=True)
         last_name = graphene.String(required=True)
+        phone = graphene.String(required=False)
 
     def mutate(self, info, **kwargs):
         """ update the first name and last name of the user """
         # get request object
         request = info.context
-        first_name = kwargs.get('first_name')
-        last_name = kwargs.get('last_name')
         user = request.user
         if user.is_authenticated:
-            user.first_name = first_name
-            user.last_name = last_name
-            user.save()
-            return EditUserProfileMutation(
-                user=user
+            serializer = ProfileSerializer(
+                data=kwargs
             )
-            # return errors in the serializer
+            if serializer.is_valid():
+                return EditUserProfileMutation(
+                    user=serializer.save(user)
+                )
+            return EditUserProfileMutation(
+                errors=errors_to_graphene(serializer.errors)
+            )
         return EditUserProfileMutation(errors={
             Error(
                 field='non_field_errors',

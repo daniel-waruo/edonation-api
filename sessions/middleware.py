@@ -12,6 +12,8 @@ class UserSessionMiddleware(MiddlewareMixin):
         user_session = request.COOKIES.get(SESSION_COOKIE_NAME)
         if 'user-session' in request.headers:
             user_session = request.headers['user-session']
+        if not user_session:
+            user_session = str(uuid4())
         request.user_session = user_session
 
     def process_response(self, request, response):

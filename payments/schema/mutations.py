@@ -76,7 +76,7 @@ class PayDonationMutation(graphene.Mutation):
                 success=False,
                 errors=[Error(
                     field='nonFieldErrors',
-                    messages=[f"Payment Checkout Failed"]
+                    messages=[transaction.reason_failed]
                 )]
             )
         return PayDonationMutation(

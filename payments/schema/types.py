@@ -2,7 +2,8 @@ import graphene
 from graphene_django.types import DjangoObjectType
 
 from payments.models import CampaignFeeTransaction, DonationTransaction
-
+from campaigns.schema.types import CampaignType
+from campaigns.models import Campaign
 
 class CampaignFeeTransactionType(DjangoObjectType):
     success_status = graphene.Boolean()
@@ -24,3 +25,12 @@ class DonationTransactionType(DjangoObjectType):
     class Meta:
         model = DonationTransaction
         exclude = ['transaction_id']
+
+    campaigns  = graphene.List(CampaignType)
+
+
+    def resolve_campaigns(self,info):
+        campaigns = Campaign.objects.filter(
+           products__donation_products__donation=self.donation
+        ).distinct()
+        return campaigns
