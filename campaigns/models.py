@@ -21,6 +21,7 @@ class Campaign(models.Model):
     is_approved = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=False)
 
     start_date = models.DateTimeField(null=True)
     end_date = models.DateTimeField(null=True)

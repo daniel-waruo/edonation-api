@@ -98,6 +98,30 @@ class Query(graphene.ObjectType):
                     product__slug=campaign_product_slug)
         return None
 
+    approved_campaigns = graphene.List(CampaignType, query=graphene.String())
+
+    def resolve_approved_campaigns(self, info, **kwargs):
+        campaigns = Campaign.objects.filter(deleted=False, is_active=True,is_approved=True)
+        if kwargs.get("query"):
+            campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
+        return campaigns
+
+    unapproved_campaigns = graphene.List(CampaignType, query=graphene.String())
+
+    def resolve_unapproved_campaigns(self, info, **kwargs):
+        campaigns = Campaign.objects.filter(deleted=False, is_active=True,is_approved=False)
+        if kwargs.get("query"):
+            campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
+        return campaigns
+
+    featured_campaigns = graphene.List(CampaignType, query=graphene.String())
+
+    def resolve_featured_campaigns(self, info, **kwargs):
+        campaigns = Campaign.objects.filter(deleted=False, is_active=True,is_featured=True)
+        if kwargs.get("query"):
+            campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
+        return campaigns
+
     closed_campaigns = graphene.List(CampaignType, query=graphene.String())
 
     def resolve_closed_campaigns(self, info, **kwargs):

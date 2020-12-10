@@ -30,6 +30,9 @@ class KnoxSerializer(serializers.Serializer):
     user = UserDetailsSerializer()
 
 
+class PasswordResetSerializer(ResetPasswordSerializer):
+    password_reset_form_class = ResetPasswordForm
+
 # serializer for logging in a user
 class LoginSerializer(BaseLoginSerializer):
     """ LoginSerializer
@@ -90,7 +93,7 @@ class CreateAdminUserSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     def validate_email(self, value):
-        if User.objects.filter(phone=value):
+        if User.objects.filter(email=value):
             raise serializers.ValidationError("Email must be unique")
         return value
 
@@ -102,8 +105,9 @@ class CreateAdminUserSerializer(serializers.Serializer):
             email=self.validated_data["email"],
             creator=self.context["request"].user
         )
-        # send email to user to set their own password
-        send_email_confirmation()
+        serializer = PasswordResetSerializer(data=dict(email=user.email),context=self.context)
+        if serializer.is_valid():
+            serializer.save()
         return user
 
 
@@ -151,9 +155,6 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Unable to log in with provided credentials.")
         return data
 
-
-class PasswordResetSerializer(ResetPasswordSerializer):
-    password_reset_form_class = ResetPasswordForm
 
 
 class ProfileSerializer(serializers.Serializer):

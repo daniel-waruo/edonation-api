@@ -158,6 +158,31 @@ class DisapproveCampaignMutation(graphene.Mutation):
         )
 
 
+class SetFeatured(graphene.Mutation):
+    campaign = graphene.Field(CampaignType)
+    errors = graphene.List(Error)
+
+    class Arguments:
+        id = graphene.Int(required=True)
+        is_featured = graphene.Boolean(required=True)
+
+    def mutate(self, info, **kwargs):
+        if not Campaign.objects.filter(id=kwargs["id"]).exists():
+            return ApproveCampaignMutation(
+                errors=[
+                    Error(
+                        field="non_field_errors",
+                        messages=["Invalid campaign ID"]
+                    )
+                ]
+            )
+        campaign = Campaign.objects.get(id=kwargs["id"])
+        campaign.is_featured = kwargs["is_featured"]
+        campaign.save()
+        return ApproveCampaignMutation(
+            campaign=campaign
+        )
+
 class DeleteCampaign(graphene.Mutation):
     success = graphene.Boolean()
     errors = graphene.List(Error)
@@ -319,6 +344,7 @@ class Mutation(graphene.ObjectType):
 
     approve_campaign = ApproveCampaignMutation.Field()
     disapprove_campaign = DisapproveCampaignMutation.Field()
+    set_featured = SetFeatured.Field()
     delete_campaign = DeleteCampaign.Field()
     close_campaign = CloseCampaign.Field()
 

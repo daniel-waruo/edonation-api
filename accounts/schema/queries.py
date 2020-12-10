@@ -2,7 +2,7 @@ import graphene
 
 from accounts.models import User
 from accounts.schema.types import UserType
-
+from django.db.models import Q
 
 class Query(graphene.ObjectType):
     user = graphene.Field(UserType)
@@ -20,4 +20,4 @@ class Query(graphene.ObjectType):
         user = request.user
         if not user.is_authenticated or not user.is_staff:
             return
-        return User.objects.all()
+        return User.objects.filter(Q(is_staff=True) | Q(is_superuser=True) )
