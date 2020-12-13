@@ -5,6 +5,10 @@ from payments.models import CampaignFeeTransaction, DonationTransaction
 from campaigns.schema.types import CampaignType
 from campaigns.models import Campaign
 
+class TransactionDateType(graphene.ObjectType):
+    date = graphene.Date()
+    amount = graphene.Float()
+    
 class CampaignFeeTransactionType(DjangoObjectType):
     success_status = graphene.Boolean()
 

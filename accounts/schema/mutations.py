@@ -95,7 +95,7 @@ class EditUserProfileMutation(graphene.Mutation):
         # get request object
         request = info.context
         user = request.user
-        if user.is_authenticated:
+        if user.is_authenticated  or not user.is_superuser:
             serializer = ProfileSerializer(
                 data=kwargs
             )
@@ -109,7 +109,7 @@ class EditUserProfileMutation(graphene.Mutation):
         return EditUserProfileMutation(errors={
             Error(
                 field='non_field_errors',
-                errors=['User is Not Authenticated']
+                errors=['User is Not Authenticated or Authorised']
             )
         })
 

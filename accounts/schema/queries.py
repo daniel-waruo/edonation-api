@@ -18,6 +18,6 @@ class Query(graphene.ObjectType):
     def resolve_users(self, info, **kwargs):
         request = info.context
         user = request.user
-        if not user.is_authenticated or not user.is_staff:
+        if not user.is_authenticated or not user.is_superuser:
             return
         return User.objects.filter(Q(is_staff=True) | Q(is_superuser=True) )

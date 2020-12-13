@@ -24,3 +24,11 @@ class Query(graphene.ObjectType):
         if get_all:
             return donation_products
         return donation_products.filter(donation__payment_status="success")
+
+    total_donated = graphene.Int()
+
+    def resolve_total_donated(self, info, **kwargs):
+        user = info.context.user
+        if not user.is_authenticated:
+            return None
+        return Donation.objects.filter(payment_status="success").count()

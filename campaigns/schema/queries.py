@@ -3,8 +3,10 @@ import graphene
 from campaigns.models import Campaign, CampaignProduct
 from products.models import Product
 from products.schema.types import ProductType
+from donations.models import Donation
+from django.db.models import Count,Sum
 from .types import (
-    CampaignType, CampaignProductType
+    CampaignType, CampaignProductType,DonationDateType
 )
 
 
@@ -45,36 +47,6 @@ class Query(graphene.ObjectType):
                 return campaign
         return None
 
-    campaigns = graphene.List(CampaignType, query=graphene.String())
-
-    def resolve_campaigns(self, info, **kwargs):
-        campaigns = Campaign.objects.filter(deleted=False, is_active=True)
-        if kwargs.get("query"):
-            campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
-        return campaigns
-
-    donate_campaigns = graphene.List(CampaignType, query=graphene.String())
-
-    def resolve_donate_campaigns(self, info, **kwargs):
-        campaigns = Campaign.objects.filter(deleted=False)
-        if kwargs.get("query"):
-            campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
-        campaigns = campaigns.filter(is_approved=True)
-        return campaigns
-
-    add_products = graphene.List(ProductType, id=graphene.Int(required=True), query=graphene.String())
-
-    def resolve_add_products(self, info, **kwargs):
-        if not Campaign.objects.filter(id=kwargs["id"], deleted=False):
-            raise Exception("Invalid Campaign ID")
-        campaign = Campaign.objects.get(id=kwargs["id"], deleted=False)
-        product_ids = list(map(lambda p: p.product.id, campaign.products.all()))
-        products = Product.objects.filter(deleted=False)
-        products = products.exclude(id__in=product_ids)
-        if kwargs.get("query"):
-            products = products.filter(name__icontains=kwargs.get("query"))
-        return products
-
     campaign_product = graphene.Field(
         CampaignProductType,
         id=graphene.ID(),
@@ -97,6 +69,49 @@ class Query(graphene.ObjectType):
                     campaign__slug=campaign_slug,
                     product__slug=campaign_product_slug)
         return None
+
+    campaigns = graphene.List(CampaignType, query=graphene.String())
+
+    def resolve_campaigns(self, info, **kwargs):
+        campaigns = Campaign.objects.filter(deleted=False, is_active=True)
+        if kwargs.get("query"):
+            campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
+        return campaigns
+
+    donate_campaigns = graphene.List(CampaignType, query=graphene.String())
+
+    def resolve_donate_campaigns(self, info, **kwargs):
+        campaigns = Campaign.objects.filter(
+            deleted=False,
+            is_active=True,
+            is_approved=True
+        )
+        if kwargs.get("query"):
+            campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
+        return campaigns
+        
+    total_active_campaigns = graphene.Int()
+
+    def resolve_total_active_campaigns(self, info, **kwargs):
+        campaigns = Campaign.objects.filter(
+            deleted=False,
+            is_active=True,
+            is_approved=True
+        )
+        return campaigns.count()
+
+    add_products = graphene.List(ProductType, id=graphene.Int(required=True), query=graphene.String())
+
+    def resolve_add_products(self, info, **kwargs):
+        if not Campaign.objects.filter(id=kwargs["id"], deleted=False):
+            raise Exception("Invalid Campaign ID")
+        campaign = Campaign.objects.get(id=kwargs["id"], deleted=False)
+        product_ids = list(map(lambda p: p.product.id, campaign.products.all()))
+        products = Product.objects.filter(deleted=False)
+        products = products.exclude(id__in=product_ids)
+        if kwargs.get("query"):
+            products = products.filter(name__icontains=kwargs.get("query"))
+        return products
 
     approved_campaigns = graphene.List(CampaignType, query=graphene.String())
 
@@ -161,3 +176,12 @@ class Query(graphene.ObjectType):
         if kwargs.get("query"):
             campaigns = campaigns.filter(name__icontains=kwargs.get("query"))
         return campaigns
+
+
+    donations_by_date = graphene.List(DonationDateType)
+
+    def resolve_donations_by_date(self: Campaign, info, **kwargs):
+        donations = Donation.objects.filter(
+            payment_status="success"
+        ).extra({'date': "date(created_on)"}).values('date').annotate(number=Count('id'))
+        return list(map(lambda x: DonationDateType(date=x["date"], number=x["number"]), donations))
