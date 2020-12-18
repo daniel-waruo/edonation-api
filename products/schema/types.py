@@ -9,6 +9,21 @@ from pyuploadcare.dj.models import ImageField
 
 from products.models import Product, Category, ProductImage
 
+def filter_products(qs,query=None,number=None,from_item=None,**kwargs):
+    """ This funtion is the one we will use to search and paginate products
+    Arguments:
+        qs - the campaigns query set to be filtered
+        query -  the query if available
+        number - the number of items
+        last_item - the position of the last item on the list
+    """
+    if query:
+        qs = qs.filter(name__icontains=query)
+    # if both parameters are provided
+    if not (number is None or from_item is None):
+        # get the number items from the last item to the number of items
+        qs = qs[from_item:from_item+number]
+    return qs
 
 @convert_django_field.register(ImageField)
 def convert_field(field, registry=None):
