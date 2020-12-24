@@ -6,7 +6,10 @@ from products.schema.types import ProductType,filter_products
 from donations.models import Donation
 from django.db.models import Count,Sum
 from campaigns.schema.types import (
-    CampaignType, CampaignProductType,DonationDateType
+    CampaignType,
+    CampaignProductType,
+    DonationDateType,
+    CampaignCountType
 )
 from .campaigns_queries import Query as CampaignsQuery
 
@@ -95,3 +98,8 @@ class Query(CampaignsQuery,graphene.ObjectType,):
             payment_status="success"
         ).extra({'date': "date(created_on)"}).values('date').annotate(number=Count('id'))
         return list(map(lambda x: DonationDateType(date=x["date"], number=x["number"]), donations))
+
+    campaign_count  = graphene.Field(CampaignCountType)
+
+    def resolve_campaign_count(self,info,**kwargs):
+        return CampaignCountType()

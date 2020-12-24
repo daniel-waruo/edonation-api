@@ -100,3 +100,43 @@ class CampaignProfileType(DjangoObjectType):
 class ProductRequestType(DjangoObjectType):
     class Meta:
         model = ProductRequest
+
+class CampaignCountType(graphene.ObjectType):
+    all = graphene.Int()
+
+    def resolve_all(self, info):
+        campaigns = Campaign.objects.filter(
+            deleted=False,
+            is_active=True
+        )
+        return campaigns.count()
+
+    un_approved = graphene.Int()
+
+    def resolve_un_approved(self, info):
+        campaigns = Campaign.objects.filter(
+            deleted=False,
+            is_active=True,
+            is_approved=False,
+        )
+        return campaigns.count()
+
+    approved = graphene.Int()
+
+    def resolve_approved(self, info):
+        campaigns = Campaign.objects.filter(
+            deleted=False,
+            is_active=True,
+            is_approved=True
+        )
+        return campaigns.count()
+
+    featured = graphene.Int()
+
+    def resolve_featured(self, info):
+        campaigns = Campaign.objects.filter(
+            deleted=False,
+            is_active=True,
+            is_featured=True
+        )
+        return campaigns.count()

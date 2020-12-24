@@ -2,9 +2,10 @@ import graphene
 
 from products.models import Product, Category
 from .types import (
-    ProductType, CategoryType, FilterProducts
+    ProductType,
+    CategoryType,
+    filter_products
 )
-from ..utils import filter_products, filter_by_price
 
 
 class Query(graphene.ObjectType):
@@ -25,47 +26,21 @@ class Query(graphene.ObjectType):
                 return Product.objects.get(slug=slug)
         return None
 
-    products = graphene.List(ProductType, query=graphene.String())
+    products = graphene.List(
+        ProductType,
+        query=graphene.String(),
+        number=graphene.Int(),
+        from_item=graphene.Int()
+    )
 
     def resolve_products(self, info, **kwargs):
         products = Product.objects.filter(deleted=False)
-        if kwargs.get("query"):
-            products = products.filter(name__icontains=kwargs.get("query"))
-        return products
+        return filter_products(products,**kwargs)
 
     all_categories = graphene.List(CategoryType)
 
     def resolve_all_categories(self, info, **kwargs):
         return Category.objects.all()
-
-    """Filter Products"""
-    filter_products = graphene.Field(
-        FilterProducts,
-        categorySlugs=graphene.List(graphene.String),
-        category_Ids=graphene.List(graphene.String),
-        query=graphene.String(),
-        min=graphene.String(),
-        max=graphene.String()
-    )
-
-    def resolve_filter_products(self, info, **kwargs):
-        category_slug = kwargs.get("categorySlugs")
-        if category_slug:
-            category_slug = category_slug[0]
-
-        category = None
-        if category_slug:
-            if Category.objects.filter(slug=category_slug).exists():
-                category = Category.objects.get(slug=category_slug)
-        # filter by category query
-        all_products = filter_products(kwargs)
-        # filter by price
-        query_set = filter_by_price(all_products, kwargs)
-        return FilterProducts(
-            all_products=all_products,
-            products=query_set,
-            category=category
-        )
 
     all_featured_products = graphene.List(ProductType)
 
