@@ -186,11 +186,6 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = []
 
-if os.environ.get('FRONT_END_URLS'):
-    urls = os.environ.get('FRONT_END_URLS')
-    urls = urls.split("+")
-    CORS_ORIGIN_WHITELIST += urls
-
 CORS_ALLOW_CREDENTIALS = True
 
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
@@ -200,6 +195,7 @@ EMAIL_HOST_USER = 'apikey'  # this is exactly the value 'apikey'
 EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'noreply@edonation.co.ke'
 
 # GRAPHENE CONFIGURATION
 GRAPHENE = {
