@@ -7,7 +7,7 @@ from cart.models import Cart
 from donations.models import Donation
 from .utils import pay_campaign_fee, pay_donation
 
-phone_regex = re.compile('^(?:\+254)?(7(?:(?:[129][0-9])|(?:0[0-8])|(4[0-1]))[0-9]{6})$')
+phone_regex = re.compile('^254([0-9]{9})$')
 
 
 class CampaignFeePaymentSerializer(serializers.Serializer):

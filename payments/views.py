@@ -7,24 +7,10 @@ from payments.models import CampaignFeeTransaction, DonationTransaction
 
 
 @csrf_exempt
-def notification_callback(request):
+def campaign_fee_callback(request):
+    """ processes the mpesa api callback """
+    # get data from request
     data = json.loads(request.body)
-    # get metadata
-    meta_data = data['requestMetadata']
-    if meta_data['type'] == 'CampaignFeeTransaction':
-        return campaign_fee_callback(data)
-    if meta_data["type"] == 'DonationTransaction':
-        return donation_payment_callback(data)
-    return HttpResponse(status=400, content="Invalid Request Data")
-
-
-def campaign_fee_callback(data):
-    """processes the africa's talking callback
-     Arguments:
-         data - data sent by africa's talking as a callback
-     Returns:
-         HTTPResponse - a 200 response to make sure that africa's talking stops sending callback
-     """
     # africa's talking transaction id
     at_transaction_id = data['transactionId']
     # get the metadata we sent with the request
@@ -61,13 +47,15 @@ def campaign_fee_callback(data):
     return HttpResponse()
 
 
-def donation_payment_callback(data):
+@csrf_exempt
+def donation_payment_callback(request):
     """processes the africa's talking callback
      Arguments:
          data - data sent by africa's talking as a callback
      Returns:
          HTTPResponse - a 200 response to make sure that africa's talking stops sending callback
      """
+    data = json.loads(request.body)
     # get AT transaction id
     # africa's talking transaction id
     at_transaction_id = data['transactionId']

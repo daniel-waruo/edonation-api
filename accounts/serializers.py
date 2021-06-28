@@ -10,7 +10,6 @@ from rest_auth.serializers import (
     UserDetailsSerializer,
     LoginSerializer as BaseLoginSerializer,
 )
-from rest_framework import serializers
 import re
 
 from django.core.validators import RegexValidator

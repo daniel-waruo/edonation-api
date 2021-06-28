@@ -8,8 +8,9 @@ User = get_user_model()
 
 
 class Transaction(models.Model):
-    transaction_id = models.TextField(unique=True, null=True)
-    mpesa_code = models.CharField(max_length=200, null=True, unique=True)
+    merchant_request_id = models.CharField(max_length=64, null=True, unique=True)
+    checkout_request_id = models.CharField(max_length=64, null=True, unique=True)
+    mpesa_code = models.CharField(max_length=64, null=True, unique=True)
     phone = models.CharField(max_length=30)
     reason_failed = models.TextField(null=True)
     amount = models.DecimalField(max_digits=9, decimal_places=2)
@@ -40,14 +41,16 @@ class Transaction(models.Model):
     def is_pending(self):
         return self.state == 'pending'
 
-    def set_pending(self, transaction_id):
-        self.transaction_id = transaction_id
+    def set_pending(self, merchant_request_id, checkout_request_id):
+        self.merchant_request_id = merchant_request_id
+        self.checkout_request_id = checkout_request_id
         self.state = 'pending'
         self.save()
 
-    def set_fail(self, transaction_id, reason_failed):
+    def set_fail(self, merchant_request_id, checkout_request_id, reason_failed):
         self.state = 'failed'
-        self.transaction_id = transaction_id
+        assert self.checkout_request_id == checkout_request_id
+        assert self.merchant_request_id == merchant_request_id
         self.reason_failed = reason_failed
         self.save()
 
@@ -76,13 +79,11 @@ class CampaignFeeTransaction(Transaction):
 
     objects = CampaignFeeTransactionManager()
 
-    def set_success(self, transaction_id, mpesa_code, transaction_cost):
+    def set_success(self, merchant_request_id, checkout_request_id, mpesa_code):
         self.mpesa_code = mpesa_code
         self.state = 'success'
-        self.transaction_id = transaction_id
-        # the amount of money it cost us to
-        # make the transaction
-        self.transaction_cost = transaction_cost
+        assert self.checkout_request_id == checkout_request_id
+        assert self.merchant_request_id == merchant_request_id
         self.save()
         # set the campaign profile as paid
         campaign_profile = self.user.campaign_profile
@@ -108,17 +109,19 @@ class DonationTransaction(Transaction):
 
     objects = DonationTransactionManager()
 
-    def set_fail(self, transaction_id, reason_failed):
-        super(DonationTransaction, self).set_fail(transaction_id, reason_failed)
+    def set_fail(self, merchant_request_id, checkout_request_id, reason_failed):
+        super(DonationTransaction, self).set_fail(
+            merchant_request_id,
+            checkout_request_id,
+            reason_failed
+        )
         self.donation.set_fail()
 
-    def set_success(self, transaction_id, mpesa_code, transaction_cost):
+    def set_success(self, merchant_request_id, checkout_request_id, mpesa_code):
         self.mpesa_code = mpesa_code
         self.state = 'success'
-        self.transaction_id = transaction_id
-        # the amount of money it cost us to
-        # make the transaction
-        self.transaction_cost = transaction_cost
+        assert self.checkout_request_id == checkout_request_id
+        assert self.merchant_request_id == merchant_request_id
         self.save()
         # set donation as successful
         self.donation.set_success()

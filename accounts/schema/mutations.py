@@ -3,7 +3,7 @@ from allauth.account import app_settings as allauth_settings
 from allauth.account.utils import complete_signup
 from rest_auth.serializers import PasswordChangeSerializer
 
-from accounts.schema.types import Error, errors_to_graphene, UserType
+from accounts.schema.types import UserType
 from accounts.serializers import (
     LoginSerializer,
     CreateAdminUserSerializer,
@@ -11,6 +11,7 @@ from accounts.serializers import (
     RegisterSerializer,
     ProfileSerializer
 )
+from utils import Error, errors_to_graphene
 
 
 class LoginMutation(graphene.Mutation):
@@ -95,7 +96,7 @@ class EditUserProfileMutation(graphene.Mutation):
         # get request object
         request = info.context
         user = request.user
-        if user.is_authenticated  or not user.is_superuser:
+        if user.is_authenticated or not user.is_superuser:
             serializer = ProfileSerializer(
                 data=kwargs
             )

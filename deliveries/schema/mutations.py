@@ -1,6 +1,6 @@
 import graphene
 
-from accounts.schema.types import Error
+from utils import Error
 from deliveries.models import Delivery
 
 

@@ -21,3 +21,4 @@ graphene_django
 django-filter
 
 africastalking
+requests

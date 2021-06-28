@@ -1,97 +1,111 @@
-import africastalking
-from africastalking import PaymentService
+import uuid
+
 from django.conf import settings
 
-# set payment provider
-provider = 'Athena' if settings.AT_USERNAME == 'sandbox' else 'Mpesa'
-
-africastalking.initialize(
-    username=settings.AT_USERNAME,
-    api_key=settings.AT_API_KEY
+from payments.models import (
+    CampaignFeeTransaction,
+    DonationTransaction,
+    Transaction
 )
+from payments.stk import initiate_stk, check_stk_status
 
-pay: PaymentService = africastalking.Payment
 
-payment_product = settings.AT_PAYMENT_PRODUCT
+def pay_via_transaction(transaction: Transaction, callback_url):
+    try:
+        response = initiate_stk(
+            phone_number=transaction.phone,
+            amount=transaction.amount,
+            transaction_id=transaction.id,
+            callback_url=callback_url
+        )
+        if response.get('ResponseCode') == '0':
+            transaction.set_pending(
+                merchant_request_id=response['MerchantRequestID'],
+                checkout_request_id=response['CheckoutRequestID']
+            )
+            return True, transaction
+        transaction.set_fail(
+            merchant_request_id=None,
+            checkout_request_id=None,
+            reason_failed=response.get('errorMessage')
+        )
+        return False, transaction
+    except Exception as e:
+        message = str(e.args)
+        transaction.set_fail(
+            merchant_request_id=None,
+            checkout_request_id=None,
+            reason_failed=message
+        )
+        return False, transaction
 
 
 def pay_campaign_fee(phone, user):
-    """ request's payment from africa'stalking API
+    """ initiates payment of campaign fee
     Args:
         phone - phone number of the customer sending the money
 
     Returns:
         tuple(success_status,transaction) - returns a success message and the transaction
     """
-    from payments.models import CampaignFeeTransaction
-    paid_amount = settings.CAMPAIGN_FEE
     transaction = CampaignFeeTransaction.objects.create(
-        amount=paid_amount,
+        amount=settings.CAMPAIGN_FEE,
         user=user,
         phone=phone
     )
-
-    try:
-        response = pay.mobile_checkout(
-            product_name=payment_product,
-            phone_number=phone,
-            currency_code="KES",
-            amount=paid_amount,
-            metadata={
-                'type': 'CampaignFeeTransaction',
-                'transaction_id': str(transaction.id)
-            }
-        )
-        if response.get('status') == 'PendingConfirmation':
-            transaction.set_pending(response['transactionId'])
-            return True, transaction
-        transaction.set_fail(
-            transaction_id=response.get('transactionId'),
-            reason_failed=response.get('description')
-        )
-        return False, transaction
-    except Exception as e:
-        message = str(e.args)
-        transaction.set_fail(
-            transaction_id=None,
-            reason_failed=message
-        )
-        return False, transaction
+    callback_url = f'{settings.CALLBACK_BASE_URL}/callback/campaign-fee'
+    return pay_via_transaction(transaction, callback_url)
 
 
 def pay_donation(donation):
-    """
-    pay for the donation
+    """ pay for the donation
     Args:
         donation - the donation to be paid for
     Returns:
         tuple(success_status,transaction) - returns a success message and the transaction
     """
-    from payments.models import DonationTransaction
     transaction = DonationTransaction.objects.create(donation)
-    try:
-        response = pay.mobile_checkout(
-            product_name=payment_product,
-            phone_number=donation.donor_phone,
-            currency_code="KES",
-            amount=donation.amount,
-            metadata={
-                'type': 'DonationTransaction',
-                'transaction_id': str(transaction.id)
-            }
-        )
-        if response.get('status') == 'PendingConfirmation':
-            transaction.set_pending(response['transactionId'])
-            return True, transaction
+    callback_url = f'{settings.CALLBACK_BASE_URL}/callback/donation-payment'
+    return pay_via_transaction(transaction, callback_url)
+
+
+"""
+{
+    'ResponseCode': '0', 
+    'ResponseDescription': 'The service request has been accepted successsfully', 
+    'MerchantRequestID': '6077-23902237-1', 
+    'CheckoutRequestID': 'ws_CO_260620212203234583', 
+    'ResultCode': '0', 
+    'ResultDesc': 'The service request is processed successfully.'
+}
+"""
+
+
+def update_transaction_status(transaction: Transaction):
+    response = check_stk_status(
+        checkout_transaction_id=transaction.checkout_request_id
+    )
+    print(response)
+    response = dict(**response)
+    response_code = response.get("ResultCode")
+    if response_code is None:
+        return transaction
+    elif response_code != '0':
+        merchant_request_id = response["MerchantRequestID"]
+        checkout_request_id = response["CheckoutRequestID"]
         transaction.set_fail(
-            transaction_id=response.get('transactionId'),
-            reason_failed=response.get('description')
+            merchant_request_id=merchant_request_id,
+            checkout_request_id=checkout_request_id,
+            reason_failed=response['ResponseDescription']
         )
-        return False, transaction
-    except Exception as e:
-        message = str(e.args)
-        transaction.set_fail(
-            transaction_id=None,
-            reason_failed=message
+        return transaction
+    elif response_code == '0':
+        merchant_request_id = response["MerchantRequestID"]
+        checkout_request_id = response["CheckoutRequestID"]
+        transaction.set_success(
+            merchant_request_id=merchant_request_id,
+            checkout_request_id=checkout_request_id,
+            mpesa_code=uuid.uuid4()
         )
-        return False, transaction
+        return transaction
+    return transaction

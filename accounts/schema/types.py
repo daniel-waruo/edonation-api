@@ -1,44 +1,16 @@
 import graphene
 from django.db.models import Count
-from graphene.utils.str_converters import to_camel_case
 from graphene_django import DjangoObjectType
 from rest_auth.models import TokenModel
-
 from accounts.models import User
 from campaigns.models import CampaignProfile
+from campaigns.schema.types import CampaignType, CampaignProfileType
+from campaigns.schema.types import DonationDateType
 from donations.models import Donation
-
-
-class Error(graphene.ObjectType):
-    """ represent errors
-        field - field for which the error is called
-        messages - messages in the field
-    """
-    field = graphene.String()
-    messages = graphene.List(graphene.String)
-
-
-def errors_to_graphene(errors: dict):
-    """Changes Serialization Errors to My Graphene Error Type
-    Args:
-        errors - errors from a serializer
-    """
-    graphene_errors = []
-    # create a list of Error Objects
-    for error in errors.keys():
-        graphene_errors.append(
-            Error(
-                field=to_camel_case(error),
-                messages=errors[error]
-            )
-        )
-    return graphene_errors
+from donations.schema.types import DonationType
 
 
 class UserType(DjangoObjectType):
-    from campaigns.schema.types import CampaignType, CampaignProfileType
-    from donations.schema.types import DonationType
-    from campaigns.schema.types import DonationDateType
     campaigns = graphene.List(CampaignType, query=graphene.String())
 
     def resolve_campaigns(self: User, info, **kwargs):

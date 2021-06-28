@@ -38,6 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    # Third Party Apps
+    'rest_framework',
+    'rest_framework.authtoken',
+    'knox',
+    'rest_auth',
+    'rest_auth.registration',
 
     # Custom Apps
     'accounts',
@@ -48,20 +54,12 @@ INSTALLED_APPS = [
     'sessions',
     'donations',
     'deliveries',
-    # third party applications
-    'rest_framework',
-    'rest_framework.authtoken',
-    'knox',
-    'rest_auth',
-    'rest_auth.registration',
 
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-
     'corsheaders',
-
     'graphene_django',
 ]
 
@@ -82,7 +80,6 @@ ROOT_URLCONF = 'root.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -234,16 +231,25 @@ REST_AUTH_SERIALIZERS = {
 CAMPAIGN_FEE = float(os.environ.get("CAMPAIGN_FEE", 100.0))
 
 # AFRICA'S TALKING CONFIGURATION
-AT_PAYMENT_PRODUCT = os.environ.get("AT_PAYMENT_PRODUCT")
-AT_USERNAME = os.environ.get("AT_USERNAME")
-AT_API_KEY = os.environ.get("AT_API_KEY")
+DARAJA_CONFIG = {
+    "short_code": os.environ.get("DARAJA_SHORT_CODE"),
+    "consumer_key": os.environ.get("DARAJA_CONSUMER_KEY"),
+    "consumer_secret": os.environ.get("DARAJA_CONSUMER_SECRET"),
+    "pass_key": os.environ.get("DARAJA_PASS_KEY")
+}
 
+DARAJA_BASE_URL = os.environ.get("DARAJA_URL")
 # SESSION SETTINGS
 SESSION_COOKIE_SAMESITE = "None"
 # STATIC FILES CONFIGURATION
 STATIC_ROOT = 'staticfiles'
+# CALLBACK BASE URL
+CALLBACK_BASE_URL = os.environ.get("CALLBACK_BASE_URL")
 
 # Configure Django App for Heroku.
-import django_heroku
+
+django_heroku = __import__('django_heroku')
 
 django_heroku.settings(locals())
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

@@ -13,14 +13,14 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import path, include
 from graphene_django.views import GraphQLView
-from django.conf.urls.static import static
-from django.conf import settings
+
 from accounts.views import DRFAuthenticatedGraphQLView
-from payments.views import notification_callback
 
 urlpatterns = [
     ############################
@@ -33,7 +33,7 @@ urlpatterns = [
     #############################
 
     # home page
-    path('', lambda request: JsonResponse({"data": "Welcome to the E-Donation API"})),
+    path('', lambda request: JsonResponse({"data": "Welcome to the Product Giving API"})),
     path('session', lambda request: JsonResponse({"data": request.session.session_key})),
     # accounts
     path('accounts/', include('accounts.urls')),
@@ -46,8 +46,9 @@ urlpatterns = [
     path("graph-ql", DRFAuthenticatedGraphQLView.as_view()),
 
     ############################
-    # AT NOTIFICATION URLS
+    # DARAJA CALLBACK URLS
     ############################
-    path("at/notification-callback", notification_callback),
+    path("callback/", include('payments.urls'))
+]
 
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -1,6 +1,6 @@
 import graphene
 
-from accounts.schema.types import Error, errors_to_graphene
+from utils import Error, errors_to_graphene
 from products.serializers import ProductSerializer
 from .types import ProductType
 from ..models import Product

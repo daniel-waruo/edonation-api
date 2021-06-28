@@ -1,9 +1,14 @@
+from allauth.account import app_settings
 from allauth.account import app_settings as allauth_settings
-from allauth.account.utils import complete_signup
+from allauth.account.utils import (
+    complete_signup,
+)
 from allauth.account.views import ConfirmEmailView
+from django.http import (
+    Http404,
+)
 from django.http import JsonResponse
 from graphene_django.views import GraphQLView
-from rest_auth.registration.serializers import SocialLoginSerializer
 from rest_auth.registration.views import RegisterView
 from rest_auth.views import LoginView, PasswordResetView as BasePasswordResetView
 from rest_framework.decorators import permission_classes, authentication_classes, api_view
@@ -61,6 +66,17 @@ class PasswordResetView(BasePasswordResetView):
 
 
 class ConfirmEmailApi(ConfirmEmailView):
+    template_name = "account/email_confirm.html"
+
+    def get(self, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+            if app_settings.CONFIRM_EMAIL_ON_GET:
+                return self.post(*args, **kwargs)
+        except Http404:
+            self.object = None
+        ctx = self.get_context_data()
+        return self.render_to_response(ctx)
 
     def post(self, *args, **kwargs):
         self.object = confirmation = self.get_object()
@@ -69,7 +85,7 @@ class ConfirmEmailApi(ConfirmEmailView):
         if not confirmation.email_address.verified:
             # if the email is not verified verify the email
             confirmation.confirm(self.request)
-            # return that the email verification was successfull
+            # return that the email verification was successful
             return JsonResponse({
                 "detail": "Email Verification successful"
             })

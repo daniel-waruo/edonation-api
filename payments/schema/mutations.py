@@ -1,6 +1,6 @@
 import graphene
 
-from accounts.schema.types import Error, errors_to_graphene
+from utils import Error, errors_to_graphene
 from payments.serializers import CampaignFeePaymentSerializer, DonationPaymentSerializer
 from .types import CampaignFeeTransactionType, DonationTransactionType
 
@@ -8,7 +8,7 @@ from .types import CampaignFeeTransactionType, DonationTransactionType
 class PayCampaignFeeMutation(graphene.Mutation):
     """ Requests for payment subscription
     Args:
-        success - whether the payment was successfull or not
+        success - whether the payment was successful or not
         errors - errors that may have occurred in the process
     """
     success = graphene.Boolean()

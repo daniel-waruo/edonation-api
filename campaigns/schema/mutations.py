@@ -1,7 +1,7 @@
 import graphene
 
-from accounts.schema.types import Error, errors_to_graphene
 from campaigns.serializers import CampaignSerializer, CampaignProductSerializer, ProductRequestSerializer
+from utils import Error, errors_to_graphene
 from .types import CampaignType, CampaignProductType, ProductRequestType
 from ..models import Campaign
 
