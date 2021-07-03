@@ -1,15 +1,15 @@
-django
-djangorestframework
+django~=3.2.4
+djangorestframework~=3.12.4
 git+https://github.com/daniel-waruo/django-rest-auth.git@master#egg=django-rest-auth
-django-allauth
+django-allauth~=0.44.0
 
 pillow
 django-qsessions
 
 django-rest-knox
-pyuploadcare
+pyuploadcare~=2.7.0
 
-python-dotenv
+python-dotenv~=0.18.0
 django-split-settings
 
 gunicorn
@@ -21,4 +21,7 @@ graphene_django
 django-filter
 
 africastalking
-requests
+requests~=2.25.1
+
+graphene~=2.1.8
+six~=1.16.0

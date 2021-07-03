@@ -179,6 +179,8 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     'user-session',
 ]
 
+CORS_EXPOSE_HEADERS = ["user-session"]
+
 # CORS CONFIGURATION
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = []

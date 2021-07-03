@@ -10,7 +10,9 @@ class Query(graphene.ObjectType):
     def resolve_cart(self, info, **kwargs):
         request = info.context
         # get and return cart object type
-        return Cart.objects.get_from_request(request)
+        cart = Cart.objects.get_from_request(request)
+        print(cart.id)
+        return cart
 
     cart_products = graphene.List(CartProductType, campaign=graphene.String(required=False))
 

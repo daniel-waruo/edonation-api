@@ -29,26 +29,22 @@ class Query(graphene.ObjectType):
             transaction = update_transaction_status(transaction)
         return transaction
 
+    income_by_date = graphene.List(TransactionDateType)
 
-income_by_date = graphene.List(TransactionDateType)
+    def resolve_income_by_date(self, info, **kwargs):
+        if not info.context.user.is_authenticated:
+            return None
+        donations = DonationTransaction.objects.filter(
+            state="success"
+        ).extra({'date': "date(created_on)"}).values('date').annotate(amount=Sum('amount'))
+        return list(map(lambda x: TransactionDateType(date=x["date"], amount=x["amount"]), donations))
 
+    total_income = graphene.Float()
 
-def resolve_income_by_date(self, info, **kwargs):
-    if not info.context.user.is_authenticated:
-        return None
-    donations = DonationTransaction.objects.filter(
-        state="success"
-    ).extra({'date': "date(created_on)"}).values('date').annotate(amount=Sum('amount'))
-    return list(map(lambda x: TransactionDateType(date=x["date"], amount=x["amount"]), donations))
-
-
-total_income = graphene.Float()
-
-
-def resolve_total_income(self, info, **kwargs):
-    if not info.context.user.is_authenticated:
-        return None
-    total_income = DonationTransaction.objects.filter(
-        state="success"
-    ).aggregate(amount=Sum('amount'))["amount"]
-    return total_income
+    def resolve_total_income(self, info, **kwargs):
+        if not info.context.user.is_authenticated:
+            return None
+        total_income = DonationTransaction.objects.filter(
+            state="success"
+        ).aggregate(amount=Sum('amount'))["amount"]
+        return total_income or 0

@@ -97,7 +97,7 @@ class ConfirmEmailApi(ConfirmEmailView):
 
 
 class DRFAuthenticatedGraphQLView(GraphQLView):
-    batch = True
+    batch = False
 
     def parse_body(self, request):
         if isinstance(request, Request):
