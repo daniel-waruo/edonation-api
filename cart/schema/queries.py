@@ -11,7 +11,6 @@ class Query(graphene.ObjectType):
         request = info.context
         # get and return cart object type
         cart = Cart.objects.get_from_request(request)
-        print(cart.id)
         return cart
 
     cart_products = graphene.List(CartProductType, campaign=graphene.String(required=False))

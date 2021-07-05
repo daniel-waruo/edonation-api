@@ -20,10 +20,8 @@ class UserSessionMiddleware:
         if request.method != "OPTIONS":
             # get your session key
             user_session = request.headers.get('user-session', "")
-            print(f"session from headers {user_session}")
             if not user_session or not is_valid_uuid4(user_session):
                 user_session = uuid4().hex
-            print(f"session before {user_session}")
             request.user_session = user_session
 
         response = self.get_response(request)
@@ -32,6 +30,5 @@ class UserSessionMiddleware:
         # the view is called.
         if request.method != "OPTIONS":
             user_session = request.user_session
-            print(f"session after {user_session}")
             response["user-session"] = user_session
         return response

@@ -85,7 +85,6 @@ def update_transaction_status(transaction: Transaction):
     response = check_stk_status(
         checkout_transaction_id=transaction.checkout_request_id
     )
-    print(response)
     response = dict(**response)
     response_code = response.get("ResultCode")
     if response_code is None:

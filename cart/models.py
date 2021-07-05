@@ -53,7 +53,6 @@ class Cart(models.Model):
             cart_product - it returns the updated cart product
         """
         if self.products.filter(product_id=product_pk).exists():
-            print(product_pk)
             return self.update_product_number(product_pk, product_quantity)
         return CartProduct.objects.create(
             quantity=product_quantity,
