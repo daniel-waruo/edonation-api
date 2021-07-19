@@ -2,6 +2,7 @@ import uuid
 
 from django.conf import settings
 
+from campaigns.models import Campaign
 from payments.models import (
     CampaignFeeTransaction,
     DonationTransaction,
@@ -10,12 +11,12 @@ from payments.models import (
 from payments.stk import initiate_stk, check_stk_status
 
 
-def pay_via_transaction(transaction: Transaction, callback_url):
+def pay_via_transaction(transaction: Transaction, callback_url, account_ref):
     try:
         response = initiate_stk(
             phone_number=transaction.phone,
             amount=transaction.amount,
-            transaction_id=transaction.id,
+            account_ref=account_ref,
             callback_url=callback_url
         )
         if response.get('ResponseCode') == '0':
@@ -54,7 +55,7 @@ def pay_campaign_fee(phone, user):
         phone=phone
     )
     callback_url = f'{settings.CALLBACK_BASE_URL}/callback/campaign-fee'
-    return pay_via_transaction(transaction, callback_url)
+    return pay_via_transaction(transaction, callback_url, account_ref="REGISTRATION")
 
 
 def pay_donation(donation):
@@ -65,20 +66,13 @@ def pay_donation(donation):
         tuple(success_status,transaction) - returns a success message and the transaction
     """
     transaction = DonationTransaction.objects.create(donation)
+    account_ref = "MultipleCampaigns"
+    campaigns = Campaign.objects.filter(products__donation_products__donation=donation)
+    if len(campaigns) == 1:
+        campaign = campaigns[0]
+        account_ref = campaign.name
     callback_url = f'{settings.CALLBACK_BASE_URL}/callback/donation-payment'
-    return pay_via_transaction(transaction, callback_url)
-
-
-"""
-{
-    'ResponseCode': '0', 
-    'ResponseDescription': 'The service request has been accepted successsfully', 
-    'MerchantRequestID': '6077-23902237-1', 
-    'CheckoutRequestID': 'ws_CO_260620212203234583', 
-    'ResultCode': '0', 
-    'ResultDesc': 'The service request is processed successfully.'
-}
-"""
+    return pay_via_transaction(transaction, callback_url, account_ref)
 
 
 def update_transaction_status(transaction: Transaction):

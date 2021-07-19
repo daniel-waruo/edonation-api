@@ -30,6 +30,7 @@ class STK(object):
                 self.config.consumer_secret
             )
         )
+        print(response.headers)
         return response.json()["access_token"]
 
     def _encoded_password(self, time_now):
@@ -39,7 +40,7 @@ class STK(object):
     def get_time_now(self):
         return datetime.datetime.now().strftime("%Y%m%d%H%I%S")
 
-    def initiate(self, phone_number, amount, callback_url, transaction_id, description=None):
+    def initiate(self, phone_number, amount, callback_url, account_ref, description=None):
         url = f"{self.base_url}/mpesa/stkpush/v1/processrequest"
         time_now = self.get_time_now()
         headers = {
@@ -56,9 +57,10 @@ class STK(object):
             "PhoneNumber": phone_number,
             "PartyB": self.config.short_code,
             "CallBackURL": callback_url,
-            "AccountReference": transaction_id,
+            "AccountReference": account_ref[:24],
             "TransactionDesc": description or f"Payment for {phone_number}"
         }
+        print(request)
         response = requests.post(url, json=request, headers=headers)
         return response.json()
 
@@ -84,8 +86,8 @@ base_url = settings.DARAJA_BASE_URL
 stk = STK(config, base_url)
 
 
-def initiate_stk(phone_number, amount, callback_url, transaction_id):
-    return stk.initiate(phone_number, amount, callback_url, transaction_id)
+def initiate_stk(phone_number, amount, callback_url, account_ref):
+    return stk.initiate(phone_number, amount, callback_url, account_ref)
 
 
 def check_stk_status(checkout_transaction_id):
