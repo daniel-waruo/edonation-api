@@ -60,7 +60,6 @@ class STK(object):
             "AccountReference": account_ref[:24],
             "TransactionDesc": description or f"Payment for {phone_number}"
         }
-        print(request)
         response = requests.post(url, json=request, headers=headers)
         return response.json()
 
