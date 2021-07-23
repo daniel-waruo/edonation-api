@@ -23,13 +23,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 's1puh=+#d$1#$ec=77c-5jz5m2^j49eahw&uoc84rna9pqe^tx'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', True)
 
-ALLOWED_HOSTS = []
+API_DOMAIN = os.environ.get('API_DOMAIN', 'localhost:8000')
+
+ALLOWED_HOSTS = [
+    API_DOMAIN
+]
+
+COMPANY_NAME = os.environ.get("COMPANY_NAME", "Product Giving")
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -66,7 +70,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'sessions.middleware.UserSessionMiddleware',
+    # 'sessions.middleware.UserSessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -224,8 +228,7 @@ REST_AUTH_TOKEN_MODEL = 'knox.models.AuthToken'
 REST_AUTH_TOKEN_CREATOR = 'accounts.utils.create_knox_token'
 
 REST_AUTH_SERIALIZERS = {
-    'USER_DETAILS_SERIALIZER': 'accounts.serializers.UserDetailsSerializer',
-    'TOKEN_SERIALIZER': 'accounts.serializers.KnoxSerializer',
+    'TOKEN_SERIALIZER': 'accounts.serializers.TokenSerializer',
     'LOGIN_SERIALIZER': 'accounts.serializers.LoginSerializer'
 }
 
@@ -242,7 +245,6 @@ DARAJA_CONFIG = {
 
 DARAJA_BASE_URL = os.environ.get("DARAJA_URL")
 # SESSION SETTINGS
-SESSION_COOKIE_SAMESITE = "None"
 # STATIC FILES CONFIGURATION
 STATIC_ROOT = 'staticfiles'
 # CALLBACK BASE URL

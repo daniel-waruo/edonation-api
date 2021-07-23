@@ -116,7 +116,7 @@ class EditUserProfileMutation(graphene.Mutation):
 
 
 class ResetPasswordMutation(graphene.Mutation):
-    """reset password"""
+    """Reset password"""
     success = graphene.Boolean()
     errors = graphene.List(Error)
 

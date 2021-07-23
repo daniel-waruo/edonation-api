@@ -1,68 +1,20 @@
 from allauth.account import app_settings
-from allauth.account import app_settings as allauth_settings
-from allauth.account.utils import (
-    complete_signup,
-)
 from allauth.account.views import ConfirmEmailView
-from django.http import (
-    Http404,
+from django.contrib.auth.views import (
+    PasswordResetConfirmView as BasePasswordResetConfirmView,
+    PasswordResetCompleteView as BasePasswordResetCompleteView, INTERNAL_RESET_SESSION_TOKEN, UserModel
 )
+from django.http import Http404
 from django.http import JsonResponse
+from django.utils.http import urlsafe_base64_decode
+from django.views.generic import TemplateView
 from graphene_django.views import GraphQLView
-from rest_auth.registration.views import RegisterView
-from rest_auth.views import LoginView, PasswordResetView as BasePasswordResetView
 from rest_framework.decorators import permission_classes, authentication_classes, api_view
 from rest_framework.permissions import (AllowAny)
 from rest_framework.request import Request
-from rest_framework.response import Response
 from rest_framework.settings import api_settings
 
-from .serializers import PasswordResetSerializer, KnoxSerializer, LoginSerializer, RegisterSerializer
-from .utils import create_knox_token
-
-
-class KnoxLoginView(LoginView):
-    serializer_class = LoginSerializer
-
-    def get_response(self):
-        # get ther serializer for response
-        serializer_class = self.get_response_serializer()
-        # set data to be sent to client
-        data = {
-            'user': self.user,
-            'token': self.token
-        }
-        # create an instance of the serializer
-        serializer = serializer_class(instance=data, context={'request': self.request})
-        # return the response object
-        return Response(serializer.data, status=200)
-
-
-class KnoxRegisterView(RegisterView):
-    serializer_class = RegisterSerializer
-
-    def get_response_data(self, user):
-        # check if email verification in mandatory then return a response saying the
-        # verification email has been sent for the user to comfirm their email
-        if allauth_settings.EMAIL_VERIFICATION == allauth_settings.EmailVerificationMethod.MANDATORY:
-            return {"detail": "Verification e-mail sent."}
-        # return serializer response
-        return KnoxSerializer({'user': user, 'token': self.token}).data
-
-    def perform_create(self, serializer):
-        # create a user using the save method of the serializer
-        user = serializer.save(self.request)
-        # get token from create knox token
-        self.token = create_knox_token(self.token_model, user, None)
-        # complete the signup process
-        complete_signup(self.request._request, user, allauth_settings.EMAIL_VERIFICATION, None)
-        # return an instance of the user that has been created
-        return user
-
-
-class PasswordResetView(BasePasswordResetView):
-    # set custom serializer class
-    serializer_class = PasswordResetSerializer
+from accounts.forms import PasswordResetForm
 
 
 class ConfirmEmailApi(ConfirmEmailView):
@@ -80,7 +32,6 @@ class ConfirmEmailApi(ConfirmEmailView):
 
     def post(self, *args, **kwargs):
         self.object = confirmation = self.get_object()
-
         # check if the email is already verified
         if not confirmation.email_address.verified:
             # if the email is not verified verify the email
@@ -94,6 +45,54 @@ class ConfirmEmailApi(ConfirmEmailView):
         return JsonResponse({
             "detail": "Your Email was already verified.Try logging in."
         }, status=400)
+
+
+class PasswordResetConfirmView(BasePasswordResetConfirmView):
+    template_name = 'pg_account/password_reset.html'
+
+    def dispatch(self, *args, **kwargs):
+        self.uid = kwargs["uidb64"]
+        return super().dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        form.save()
+        del self.request.session[INTERNAL_RESET_SESSION_TOKEN]
+        return self.render_to_response(
+            context={
+                "form": None,
+                "validlink": True
+            }
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["uid"] = self.uid
+        return context
+
+
+class PasswordResetCompleteView(BasePasswordResetCompleteView):
+    pass
+
+
+class PasswordResetResendView(TemplateView):
+    template_name = 'pg_account/password_reset_resend.html'
+
+    def get_user(self, uidb64):
+        try:
+            # urlsafe_base64_decode() decodes to bytestring
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = UserModel._default_manager.get(pk=uid)
+        except Exception:
+            user = None
+        return user
+
+    def get(self, request, *args, **kwargs):
+        assert 'uidb64' in kwargs
+        user = self.get_user(kwargs['uidb64'])
+        form = PasswordResetForm({"email": user.email})
+        form.is_valid()
+        form.save()
+        return super().get(request, *args, **kwargs)
 
 
 class DRFAuthenticatedGraphQLView(GraphQLView):
