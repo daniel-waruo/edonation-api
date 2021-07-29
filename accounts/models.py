@@ -53,7 +53,7 @@ class User(AbstractUser):
         Returns: username string
         """
         # get first and last name
-        first_name, last_name = full_name.lower().name.split(' ')
+        first_name, last_name = full_name.lower().split(' ')
         # try initials first names plus last whole name
         username = '{}{}'.format(first_name[0], last_name)
         if User.objects.filter(username=username).count() > 0:

@@ -1,0 +1,35 @@
+{% extends 'pg_account/emails/base.html' %}
+{% load i18n %}
+{% block head_title %}Confirm Your Email{% endblock %}
+{% block css %}
+    <style rel="stylesheet">
+        .button-container {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+
+    {% autoescape off %}
+        <h3 class="title">Confirm Your Email</h3>
+        <div class="content">
+            <div>
+                Hi {{ user.first_name }},
+                You're receiving this email because you have recently opened a {{ company_name }} account.
+                <br/>
+                Click on the below link to confirm your email :-
+                <ul>
+                    <li>
+                        <a href="{{ base_url }}{% url 'confirm_email' uidb64=uid token=token %}">
+                            {{ base_url }}{% url 'confirm_email' uidb64=uid token=token %}
+                        </a>
+                    </li>
+                </ul>
+                <p>
+                    Thanks from {{ company_name }} Team!
+                </p>
+            </div>
+        </div>
+    {% endautoescape %}
+{% endblock %}

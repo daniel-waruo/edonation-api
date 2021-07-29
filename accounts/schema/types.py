@@ -1,7 +1,8 @@
 import graphene
 from django.db.models import Count
 from graphene_django import DjangoObjectType
-from rest_auth.models import TokenModel
+from knox.models import AuthToken
+
 from accounts.models import User
 from campaigns.models import CampaignProfile
 from campaigns.schema.types import CampaignType, CampaignProfileType
@@ -85,5 +86,5 @@ class TokenType(DjangoObjectType):
         return self.token_key
 
     class Meta:
-        model = TokenModel
+        model = AuthToken
         fields = ["token_key"]

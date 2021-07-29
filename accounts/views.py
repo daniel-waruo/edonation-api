@@ -1,10 +1,7 @@
-from allauth.account import app_settings
-from allauth.account.views import ConfirmEmailView
 from django.contrib.auth.views import (
     PasswordResetConfirmView as BasePasswordResetConfirmView,
     PasswordResetCompleteView as BasePasswordResetCompleteView, INTERNAL_RESET_SESSION_TOKEN, UserModel
 )
-from django.http import Http404
 from django.http import JsonResponse
 from django.utils.http import urlsafe_base64_decode
 from django.views.generic import TemplateView
@@ -15,27 +12,54 @@ from rest_framework.request import Request
 from rest_framework.settings import api_settings
 
 from accounts.forms import PasswordResetForm
+from accounts.models import User
+from accounts.tokens import AccountConfirmationTokenGenerator
+from accounts.utils import send_confirmation_email
 
 
-class ConfirmEmailApi(ConfirmEmailView):
-    template_name = "account/email_confirm.html"
+def get_user_from_uid(uidb64):
+    try:
+        # urlsafe_base64_decode() decodes to bytestring
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = UserModel._default_manager.get(pk=uid)
+    except Exception:
+        user = None
+    return user
+
+
+class ConfirmEmailApi(TemplateView):
+    template_name = "pg_account/email_confirm.html"
+    token_generator = AccountConfirmationTokenGenerator()
 
     def get(self, *args, **kwargs):
-        try:
-            self.object = self.get_object()
-            if app_settings.CONFIRM_EMAIL_ON_GET:
-                return self.post(*args, **kwargs)
-        except Http404:
-            self.object = None
-        ctx = self.get_context_data()
-        return self.render_to_response(ctx)
+        # get user from uidb64
+        assert 'uidb64' in kwargs and 'token' in kwargs
+        user: User = get_user_from_uid(kwargs['uidb64'])
+        # authenticate token against generator
+        validlink = self.token_generator.check_token(user, kwargs['token'])
+        # return valid context
+        context = {
+            "validlink": validlink,
+            "user": user,
+            "uid": kwargs['uidb64'],
+            "token": kwargs['token']
+        }
+        return self.render_to_response(context)
 
     def post(self, *args, **kwargs):
-        self.object = confirmation = self.get_object()
+        assert 'uidb64' in kwargs and 'token' in kwargs
         # check if the email is already verified
-        if not confirmation.email_address.verified:
+        # get user from uuid
+        user: User = get_user_from_uid(kwargs['uidb64'])
+        validlink = self.token_generator.check_token(user, kwargs['token'])
+        if not validlink:
+            return JsonResponse({
+                "detail": "Invalid Confirmation Link"
+            }, status=400)
+        if not user.email_confirmed:
             # if the email is not verified verify the email
-            confirmation.confirm(self.request)
+            user.email_confirmed = True
+            user.save()
             # return that the email verification was successful
             return JsonResponse({
                 "detail": "Email Verification successful"
@@ -45,6 +69,16 @@ class ConfirmEmailApi(ConfirmEmailView):
         return JsonResponse({
             "detail": "Your Email was already verified.Try logging in."
         }, status=400)
+
+
+class ConfirmResendView(TemplateView):
+    template_name = 'pg_account/email_confirm_resend.html'
+
+    def get(self, request, *args, **kwargs):
+        assert 'uidb64' in kwargs
+        user = get_user_from_uid(kwargs['uidb64'])
+        send_confirmation_email(user)
+        return super().get(request, *args, **kwargs)
 
 
 class PasswordResetConfirmView(BasePasswordResetConfirmView):
@@ -77,18 +111,9 @@ class PasswordResetCompleteView(BasePasswordResetCompleteView):
 class PasswordResetResendView(TemplateView):
     template_name = 'pg_account/password_reset_resend.html'
 
-    def get_user(self, uidb64):
-        try:
-            # urlsafe_base64_decode() decodes to bytestring
-            uid = urlsafe_base64_decode(uidb64).decode()
-            user = UserModel._default_manager.get(pk=uid)
-        except Exception:
-            user = None
-        return user
-
     def get(self, request, *args, **kwargs):
         assert 'uidb64' in kwargs
-        user = self.get_user(kwargs['uidb64'])
+        user = get_user_from_uid(kwargs['uidb64'])
         form = PasswordResetForm({"email": user.email})
         form.is_valid()
         form.save()

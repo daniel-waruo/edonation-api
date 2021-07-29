@@ -29,7 +29,6 @@ class PasswordResetForm(BasePasswordResetForm):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = token_generator.make_token(user)
             password_reset_url = f'{protocol}://{domain}/{endpoint}/{uid}/{token}'
-            print(token_generator.check_token(user, token))
             context = {
                 'domain': domain,
                 'password_reset_url': password_reset_url,

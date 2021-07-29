@@ -1,49 +1,47 @@
 <!DOCTYPE html>
-{% load account %}
-{% user_display user as user_display %}
 {% load i18n %}
 <html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>{% block head_title %}{% endblock %}</title>
-  <style rel="stylesheet">
-    body {
-      font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
-      color: #212529;
-      font-weight: lighter;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>{% block head_title %}{% endblock %}</title>
+    <style rel="stylesheet">
+        body {
+            font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+            color: #212529;
+            font-weight: lighter;
+        }
 
-    .container {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
 
-    a.btn:not([href]):not([tabindex]), a.btn:not([href]):not([tabindex]):focus, a.btn:not([href]):not([tabindex]):hover {
-      color: #fff
-    }
+        a.btn:not([href]):not([tabindex]), a.btn:not([href]):not([tabindex]):focus, a.btn:not([href]):not([tabindex]):hover {
+            color: #fff
+        }
 
-    .title {
-      font-weight: 100;
-      font-size: 2rem;
-    }
+        .title {
+            font-weight: 100;
+            font-size: 2rem;
+        }
 
-    .content {
-      padding-top: 0.5rem;
-      padding-bottom: 0.5rem;
-    }
-  </style>
-  {% block css %}{% endblock %}
+        .content {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+    </style>
+    {% block css %}{% endblock %}
 </head>
 <body>
 <div>
-  <!--TODO: Add revelant domain name -->
-  <div class="container">
-    {% block content %}
-    {% endblock %}
-  </div>
-  <br/>
+    <!--TODO: Add revelant domain name -->
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+    <br/>
 </div>
 </body>
 </html>

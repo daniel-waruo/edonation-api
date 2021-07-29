@@ -1,0 +1,110 @@
+{% extends "pg_account/base.html" %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Confirm E-mail Address" %}{% endblock %}
+
+
+{% block content %}
+    <div class="w-100">
+        <div id="show-alert" class="col-9 mx-auto">
+
+        </div>
+    </div>
+    <h1>{% trans "Confirm E-mail Address" %}</h1>
+
+    {% if validlink %}
+        Hi , {{ user.first_name }}
+        <p>
+            {% blocktrans with user.email as email %}
+                Please confirm that
+                <a href="mailto:{{ email }}">
+                    {{ email }}
+                </a>
+                is your e-mail address for your E-donation account
+            {% endblocktrans %}
+        </p>
+
+        <form id="confirm-form"
+              method="post"
+              action="{% url 'confirm_email' uidb64=uid token=token %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-cyan rounded-pill">{% trans 'Confirm' %}</button>
+        </form>
+
+    {% else %}
+        <p>
+            This e-mail confirmation link expired or is invalid. Please
+            <a href="{% url 'resend_confirm_email' uidb64=uid %}"> issue a new e-mail confirmation request</a>.
+        </p>
+    {% endif %}
+
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+      // get confirmation button
+      let confirmForm = document.getElementById("confirm-form");
+      let showAlert = document.getElementById("show-alert");
+
+      function confirmSuccess(data) {
+        // create an alert element
+        let successAlert = document.createElement("div");
+        // create a class attrinute
+        let successClass = document.createAttribute("class");
+        // set class value
+        successClass.value = "alert alert-success text-center animated bounce";
+        // create role attribute and set value
+        let role = document.createAttribute("role");
+        role.value = "alert";
+
+        // set attributes to alert node
+        successAlert.setAttributeNode(role);
+        successAlert.setAttributeNode(successClass);
+        // set the alert message
+        successAlert.innerHTML = data.detail;
+        // clear the show alert div and render our alert to the dom
+        showAlert.innerHTML = "";
+        showAlert.appendChild(successAlert);
+      }
+
+      function confirmFailure(data) {
+        // get response mesage json
+        data = data.responseJSON;
+        // create an alert node
+        let errorAlert = document.createElement("div");
+        // create a class attribute and set its value
+        let errorClass = document.createAttribute("class");
+        errorClass.value = "alert alert-danger text-center animated bounce";
+        // create a role attribute and set its value
+        let role = document.createAttribute("role");
+        role.value = "alert";
+
+        // set atributes to alert node
+        errorAlert.setAttributeNode(role);
+        errorAlert.setAttributeNode(errorClass);
+        // set the alert message
+        errorAlert.innerHTML = data.detail;
+        // clear the contents of the showAlert div
+        showAlert.innerHTML = "";
+        // render alert to the dom using appendChild
+        showAlert.appendChild(errorAlert);
+      }
+
+      //set an event listener to submit
+      $(confirmForm).submit(function (e) {
+
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+
+        let form = $(this);
+        let url = form.attr('action');
+
+        $.ajax({
+          type: "POST",
+          url: url,
+          data: form.serialize(), // serializes the form's elements.
+          success: confirmSuccess,
+          error: confirmFailure
+        });
+      });
+    </script>
+{% endblock %}

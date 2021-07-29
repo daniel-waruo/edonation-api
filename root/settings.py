@@ -44,11 +44,9 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     # Third Party Apps
     'rest_framework',
-    'rest_framework.authtoken',
     'knox',
-    'rest_auth',
-    'rest_auth.registration',
-
+    'corsheaders',
+    'graphene_django',
     # Custom Apps
     'accounts',
     'products',
@@ -59,18 +57,12 @@ INSTALLED_APPS = [
     'donations',
     'deliveries',
 
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
-    'corsheaders',
-    'graphene_django',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # 'sessions.middleware.UserSessionMiddleware',
+    'sessions.middleware.UserSessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -131,10 +123,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Authentication Backends
 AUTHENTICATION_BACKENDS = (
-    # Needed to login by username in Django admin, regardless of `allauth`
+    # Needed to login by username in Django admin
     'django.contrib.auth.backends.ModelBackend',
-    # allauth` specific authentication methods, such as login by e-mail
-    'allauth.account.auth_backends.AuthenticationBackend',
 )
 
 # Custom User Model Specification
@@ -157,42 +147,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = 'staticfiles'
 
-# ALL-AUTH ACCOUNT SETTINGS
-
-ACCOUNT_ADAPTER = "accounts.adapter.AccountAdapter"
-
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = "email"
-ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 14
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 10
-ACCOUNT_LOGOUT_ON_GET = False
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_USERNAME_REQUIRED = False
-
-SOCIALACCOUNT_AUTO_SIGNUP = False
-
-OLD_PASSWORD_FIELD_ENABLED = True
-LOGOUT_ON_PASSWORD_CHANGE = False
-
-EMAIL_CONFIRMATION_HMAC = False
-EMAIL_CONFIRMATION_COOLDOWN = 60 * 60 * 60 * 3
+# CORS CONFIGURATION
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'user-session',
 ]
-
 CORS_EXPOSE_HEADERS = ["user-session"]
-
-# CORS CONFIGURATION
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = []
-
 CORS_ALLOW_CREDENTIALS = True
 
+# EMAIL CONFIGURATION
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
-
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_HOST_USER = 'apikey'  # this is exactly the value 'apikey'
 EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
@@ -224,18 +192,10 @@ REST_FRAMEWORK = {
     ),
 }
 
-REST_AUTH_TOKEN_MODEL = 'knox.models.AuthToken'
-REST_AUTH_TOKEN_CREATOR = 'accounts.utils.create_knox_token'
-
-REST_AUTH_SERIALIZERS = {
-    'TOKEN_SERIALIZER': 'accounts.serializers.TokenSerializer',
-    'LOGIN_SERIALIZER': 'accounts.serializers.LoginSerializer'
-}
-
-# CAMPAIGN FEE PAYMENT
+# CAMPAIGN FEE
 CAMPAIGN_FEE = float(os.environ.get("CAMPAIGN_FEE", 100.0))
 
-# AFRICA'S TALKING CONFIGURATION
+# MPESA CONFIGURATIONS
 DARAJA_CONFIG = {
     "short_code": os.environ.get("DARAJA_SHORT_CODE"),
     "consumer_key": os.environ.get("DARAJA_CONSUMER_KEY"),
@@ -244,14 +204,11 @@ DARAJA_CONFIG = {
 }
 
 DARAJA_BASE_URL = os.environ.get("DARAJA_URL")
-# SESSION SETTINGS
-# STATIC FILES CONFIGURATION
-STATIC_ROOT = 'staticfiles'
+
 # CALLBACK BASE URL
 CALLBACK_BASE_URL = os.environ.get("CALLBACK_BASE_URL")
 
 # Configure Django App for Heroku.
-
 django_heroku = __import__('django_heroku')
 
 django_heroku.settings(locals())
