@@ -42,6 +42,7 @@ class Donation(models.Model):
         ('success', 'Success')
     )
     payment_status = models.CharField(choices=TRANSACTION_STATE, max_length=7, default='pending')
+    amount_paid = models.DecimalField(max_digits=14, decimal_places=2, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
     objects = DonationManager()
 
@@ -51,6 +52,11 @@ class Donation(models.Model):
 
     def set_success(self):
         self.payment_status = "success"
+        self.amount_paid = self.amount
+        products = self.products.all()
+        for product in products:
+            product.product_price = product.product.product.price
+        DonationProduct.objects.bulk_update(products, ['product_price'])
         self.save()
 
     def set_fail(self):
@@ -71,6 +77,7 @@ class Donation(models.Model):
 class DonationProduct(models.Model):
     donation = models.ForeignKey(Donation, on_delete=models.CASCADE, related_name="products")
     product = models.ForeignKey(CampaignProduct, on_delete=models.CASCADE, related_name="donation_products")
+    product_price = models.DecimalField(max_digits=14, decimal_places=2, null=True)
     quantity = models.PositiveIntegerField(default=1)
     delivered = models.BooleanField(default=False)
 
