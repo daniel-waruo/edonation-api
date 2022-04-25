@@ -1,6 +1,4 @@
 from django.db import models
-from django.db.models import Sum, F, FloatField
-
 from campaigns.models import CampaignProduct
 from cart.models import Cart, CartProduct
 
@@ -11,7 +9,8 @@ class DonationManager(models.Manager):
             donor_name=donor_name or "Anonymous",
             donor_phone=donor_phone,
             donor_email=donor_email,
-            cart=cart
+            cart=cart,
+            amount_paid=cart.total()
         )
         cart_products = cart.products.all()
         if campaign_slug:
@@ -27,7 +26,8 @@ class DonationManager(models.Manager):
             DonationProduct.objects.create(
                 product=cart_product.product,
                 donation=donation,
-                quantity=cart_product.quantity
+                quantity=cart_product.quantity,
+                product_price=cart_product.product_total()
             )
 
 
@@ -52,26 +52,11 @@ class Donation(models.Model):
 
     def set_success(self):
         self.payment_status = "success"
-        self.amount_paid = self.amount
-        products = self.products.all()
-        for product in products:
-            product.product_price = product.product.product.price
-        DonationProduct.objects.bulk_update(products, ['product_price'])
         self.save()
 
     def set_fail(self):
         self.payment_status = "failed"
         self.save()
-
-    @property
-    def amount(self):
-        """get the total price value of items in the cart """
-        if self.products.all().exists():
-            total = self.products.aggregate(
-                donation_amount=Sum(F("quantity") * F("product__product__price"), output_field=FloatField())
-            )["donation_amount"]
-            return total
-        return 0
 
 
 class DonationProduct(models.Model):

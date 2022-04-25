@@ -92,9 +92,9 @@ class CampaignFeeTransaction(Transaction):
 
 
 class DonationTransactionManager(models.Manager):
-    def create(self, donation):
+    def create(self, donation: Donation):
         return super().create(
-            amount=donation.amount,
+            amount=donation.amount_paid,
             donation=donation,
             phone=donation.donor_phone,
         )

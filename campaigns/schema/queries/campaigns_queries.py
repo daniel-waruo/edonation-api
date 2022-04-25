@@ -1,15 +1,12 @@
 import graphene
 
-from campaigns.models import Campaign, CampaignProduct
-from products.models import Product
-from products.schema.types import ProductType
-from donations.models import Donation
-from django.db.models import Count,Sum
+from campaigns.models import Campaign
 from ..types import (
-    CampaignType, CampaignProductType,DonationDateType
+    CampaignType
 )
 
-def filter_campaigns(qs,query=None,number=None,from_item=None):
+
+def filter_campaigns(qs, query=None, number=None, from_item=None):
     """ This funtion is the one we will use to search and paginate campaigns
     Arguments:
         qs - the campaigns query set to be filtered
@@ -22,8 +19,9 @@ def filter_campaigns(qs,query=None,number=None,from_item=None):
     # if both parameters are provided
     if not (number is None or from_item is None):
         # get the number items from the last item to the number of items
-        qs = qs[from_item:from_item+number]
+        qs = qs[from_item:from_item + number]
     return qs
+
 
 CampaignListQueryType = graphene.List(
     CampaignType,
@@ -32,8 +30,8 @@ CampaignListQueryType = graphene.List(
     from_item=graphene.Int()
 )
 
-class Query(graphene.ObjectType):
 
+class Query(graphene.ObjectType):
     campaigns = CampaignListQueryType
 
     def resolve_campaigns(self, info, **kwargs):
@@ -41,9 +39,9 @@ class Query(graphene.ObjectType):
         qs = Campaign.objects.filter(deleted=False, is_active=True)
         return filter_campaigns(qs, **kwargs)
 
-    donate_campaigns = CampaignListQueryType
+    valid_campaigns = CampaignListQueryType
 
-    def resolve_donate_campaigns(self, info, **kwargs):
+    def resolve_valid_campaigns(self, info, **kwargs):
         qs = Campaign.objects.filter(
             deleted=False,
             is_active=True,
@@ -51,6 +49,16 @@ class Query(graphene.ObjectType):
         )
         return filter_campaigns(qs, **kwargs)
 
+    donated_campaigns = CampaignListQueryType
+
+    def resolve_donated_campaigns(self, info, **kwargs):
+        qs = Campaign.objects.filter(
+            deleted=False,
+            is_active=True,
+            is_approved=True,
+            products__cart_products__cart__isnull=False
+        )
+        return filter_campaigns(qs, **kwargs)
 
     approved_campaigns = CampaignListQueryType
 

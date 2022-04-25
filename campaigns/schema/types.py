@@ -7,6 +7,7 @@ from pyuploadcare.dj.models import ImageField
 from campaigns.models import Campaign, CampaignProduct, CampaignProfile, ProductRequest
 from cart.models import Cart
 from donations.models import Donation, DonationProduct
+from donations.schema.types import DonationType, DonationProductType
 
 
 @convert_django_field.register(ImageField)
@@ -81,6 +82,13 @@ class CampaignType(DjangoObjectType):
         ).extra({'date': "date(created_on)"}).values('date').annotate(number=Count('id'))
         return list(map(lambda x: DonationDateType(date=x["date"], number=x["number"]), donations))
 
+    donations = graphene.List(DonationProductType)
+
+    def resolve_donations(self: Campaign, info, **kwargs):
+        donations = DonationProduct.objects.filter(
+           donation__payment_status="success"
+        )
+        return
     products = graphene.List(CampaignProductType)
 
     def resolve_products(self: Campaign, info, **kwargs):
@@ -100,6 +108,7 @@ class CampaignProfileType(DjangoObjectType):
 class ProductRequestType(DjangoObjectType):
     class Meta:
         model = ProductRequest
+
 
 class CampaignCountType(graphene.ObjectType):
     all = graphene.Int()

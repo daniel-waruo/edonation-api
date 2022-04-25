@@ -19,7 +19,6 @@ class CampaignFeeTransactionType(DjangoObjectType):
 
     class Meta:
         model = CampaignFeeTransaction
-        exclude = ['transaction_id']
 
 
 class DonationTransactionType(DjangoObjectType):
@@ -30,7 +29,6 @@ class DonationTransactionType(DjangoObjectType):
 
     class Meta:
         model = DonationTransaction
-        exclude = ['transaction_id']
 
     campaigns = graphene.List(CampaignType)
 
