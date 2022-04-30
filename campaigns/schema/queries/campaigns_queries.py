@@ -1,6 +1,7 @@
 import graphene
 
 from campaigns.models import Campaign
+from cart.models import Cart
 from ..types import (
     CampaignType
 )
@@ -52,11 +53,13 @@ class Query(graphene.ObjectType):
     cart_campaigns = CampaignListQueryType
 
     def resolve_cart_campaigns(self, info, **kwargs):
+        cart = Cart.objects.get_from_request(info.context)
         qs = Campaign.objects.filter(
             deleted=False,
             is_active=True,
             is_approved=True,
-            products__cart_products__cart__isnull=False
+            products__cart_products__cart=cart
+
         ).distinct()
         return filter_campaigns(qs, **kwargs)
 
