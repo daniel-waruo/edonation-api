@@ -29,7 +29,7 @@ class DonationPaymentSerializer(serializers.Serializer):
         validators=[RegexValidator(phone_regex, message="Invalid Phone Number")]
     )
     donor_email = serializers.EmailField(required=False, allow_blank=True)
-    campaign_slug = serializers.SlugField(required=False)
+    campaign_slug = serializers.SlugField(required=True)
 
     def save(self, **kwargs):
         cart = Cart.objects.get_from_request(self.context["request"])

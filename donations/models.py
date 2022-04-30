@@ -1,38 +1,47 @@
 from django.db import models
-from campaigns.models import CampaignProduct
+
+from campaigns.models import CampaignProduct, Campaign
 from cart.models import Cart, CartProduct
 
 
 class DonationManager(models.Manager):
-    def create(self, donor_phone, cart, donor_name=None, donor_email=None, campaign_slug=None):
+    def create(self, donor_phone, cart, campaign_slug, donor_name=None, donor_email=None, ):
+        campaign = Campaign.objects.get(
+            slug=campaign_slug
+        )
         donation = super().create(
             donor_name=donor_name or "Anonymous",
             donor_phone=donor_phone,
             donor_email=donor_email,
-            cart=cart,
+            campaign=campaign,
             amount_paid=cart.total()
         )
-        cart_products = cart.products.all()
-        if campaign_slug:
-            cart_products = cart_products.filter(
-                product__campaign__slug=campaign_slug
-            )
+        cart_products = cart.products.filter(
+            product__campaign=campaign
+        )
         # create donation products
         self.cart_to_donation(donation, cart_products)
         return donation
 
     def cart_to_donation(self, donation, cart_products):
-        for cart_product in cart_products:
-            DonationProduct.objects.create(
-                product=cart_product.product,
-                donation=donation,
-                quantity=cart_product.quantity,
-                product_price=cart_product.product_total()
+        DonationProduct.objects.bulk_create(
+            list(
+                map(
+                    lambda cart_product: DonationProduct(
+                        product=cart_product.product,
+                        donation=donation,
+                        quantity=cart_product.quantity,
+                        product_price=cart_product.product_total()
+                    ),
+                    cart_products
+                )
             )
+        )
 
 
 class Donation(models.Model):
     cart = models.ForeignKey(Cart, null=True, on_delete=models.SET_NULL)
+    campaign = models.ForeignKey(Campaign, null=True, on_delete=models.SET_NULL)
     donor_name = models.CharField(max_length=50, null=True, blank=True)
     donor_phone = models.CharField(max_length=15)
     donor_email = models.EmailField(blank=True, null=True)
