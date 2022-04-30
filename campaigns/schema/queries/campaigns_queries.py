@@ -57,7 +57,7 @@ class Query(graphene.ObjectType):
             is_active=True,
             is_approved=True,
             products__cart_products__cart__isnull=False
-        )
+        ).distinct()
         return filter_campaigns(qs, **kwargs)
 
     donated_campaigns = CampaignListQueryType
