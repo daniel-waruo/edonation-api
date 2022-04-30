@@ -49,6 +49,17 @@ class Query(graphene.ObjectType):
         )
         return filter_campaigns(qs, **kwargs)
 
+    cart_campaigns = CampaignListQueryType
+
+    def resolve_cart_campaigns(self, info, **kwargs):
+        qs = Campaign.objects.filter(
+            deleted=False,
+            is_active=True,
+            is_approved=True,
+            products__cart_products__cart__isnull=False
+        )
+        return filter_campaigns(qs, **kwargs)
+
     donated_campaigns = CampaignListQueryType
 
     def resolve_donated_campaigns(self, info, **kwargs):
