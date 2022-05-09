@@ -41,7 +41,7 @@ class DonationManager(models.Manager):
 
 class Donation(models.Model):
     cart = models.ForeignKey(Cart, null=True, on_delete=models.SET_NULL)
-    campaign = models.ForeignKey(Campaign, null=True, on_delete=models.SET_NULL)
+    campaign = models.ForeignKey(Campaign, null=True, on_delete=models.SET_NULL, related_name='donations')
     donor_name = models.CharField(max_length=50, null=True, blank=True)
     donor_phone = models.CharField(max_length=15)
     donor_email = models.EmailField(blank=True, null=True)

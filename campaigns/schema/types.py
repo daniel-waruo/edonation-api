@@ -7,7 +7,7 @@ from pyuploadcare.dj.models import ImageField
 from campaigns.models import Campaign, CampaignProduct, CampaignProfile, ProductRequest
 from cart.models import Cart
 from donations.models import Donation, DonationProduct
-from donations.schema.types import DonationType, DonationProductType
+from donations.schema.types import DonationType
 
 
 @convert_django_field.register(ImageField)
@@ -82,13 +82,11 @@ class CampaignType(DjangoObjectType):
         ).extra({'date': "date(created_on)"}).values('date').annotate(number=Count('id'))
         return list(map(lambda x: DonationDateType(date=x["date"], number=x["number"]), donations))
 
-    donations = graphene.List(DonationProductType)
+    donations = graphene.List(DonationType)
 
     def resolve_donations(self: Campaign, info, **kwargs):
-        donations = DonationProduct.objects.filter(
-           donation__payment_status="success"
-        )
-        return
+        return self.donations.filter(transaction__mpesa_code__isnull=False)
+
     products = graphene.List(CampaignProductType)
 
     def resolve_products(self: Campaign, info, **kwargs):
